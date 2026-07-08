@@ -207,7 +207,7 @@ async function uploadImageToDrive(blob, filename, imgIndex) {
     }
 }
 
-// 【更新】支援雲端刪除的移除相片功能
+// 【修復】支援真正雲端同步連動刪除的移除相片功能
 async function removeImage(index, event) {
     event.preventDefault();
     event.stopPropagation(); // 防止點擊按鈕時觸發到底下的上傳按鈕
@@ -358,11 +358,11 @@ async function cloudLoad() {
             document.getElementById('cb'+c).checked = targetData['cb'+c] || false;
         }
         
-        // 【更新】填回各區的文字說明與重點能力
+        // 【修復】將各區缺失的紀錄日期、說明與重點能力確實填回畫面
         for(let i=1; i<=4; i++) {
-            if (targetData['pd'+i]) document.getElementById('pd'+i).value = targetData['pd'+i];
-            if (targetData['pdesc'+i]) document.getElementById('pdesc'+i).value = targetData['pdesc'+i];
-            if (targetData['pab'+i]) document.getElementById('pab'+i).value = targetData['pab'+i];
+            document.getElementById('pd'+i).value = targetData['pd'+i] || '';
+            document.getElementById('pdesc'+i).value = targetData['pdesc'+i] || '';
+            document.getElementById('pab'+i).value = targetData['pab'+i] || '';
         }
         
         // 讀取相片二進位資料並轉為 Base64
@@ -438,4 +438,12 @@ function showLoading(text) {
 }
 function hideLoading() { 
     document.getElementById('loader').style.display = 'none';
+}
+
+// ==================== 新增系統說明視窗開關控制 ====================
+function showInfo() {
+    document.getElementById('infoModal').style.display = 'flex';
+}
+function closeInfo() {
+    document.getElementById('infoModal').style.display = 'none';
 }

@@ -52,7 +52,8 @@
     .checkbox-cell input[type="checkbox"] { transform: scale(1.2); margin-right: 4px; vertical-align: middle; cursor: pointer; }
     .checkbox-icon { font-size: 16px; margin-right: 3px; vertical-align: middle; }
 
-    .photo-cell { display: flex; flex-direction: column; height: 410px; box-sizing: border-box; }
+    /* 【修正】加上 position: relative 確保各欄位的刪除鍵留在自己照片的右上角 */
+    .photo-cell { display: flex; flex-direction: column; height: 410px; box-sizing: border-box; position: relative; }
     .photo-area { height: 250px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #000; cursor: pointer; overflow: hidden; position: relative; background-color: #f9f9f9; -webkit-tap-highlight-color: transparent; }
     .photo-area:active { background-color: #e0e0e0; }
     .photo-area img { width: 100%; height: 100%; object-fit: contain; display: none; }
@@ -171,6 +172,21 @@
         .header-info select { appearance: none; -webkit-appearance: none; }
         .photo-placeholder { display: none !important; }
     }
+
+    /* ==================================================== */
+    /* 4. 新增系統說明彈出視窗樣式                           */
+    /* ==================================================== */
+    .btn-info { background-color: #00bcd4; }
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 4000; display: none; justify-content: center; align-items: center; padding: 20px; }
+    .modal-content { background: #fff; width: 100%; max-width: 600px; border-radius: 8px; padding: 25px; max-height: 85vh; overflow-y: auto; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-family: "Microsoft JhengHei", sans-serif; }
+    .modal-close { position: absolute; top: 15px; right: 15px; cursor: pointer; font-size: 24px; border: none; background: transparent; color: #888; }
+    .modal-title { font-size: 21px; font-weight: bold; margin-top: 0; margin-bottom: 15px; color: #1a73e8; border-bottom: 2px solid #eee; padding-bottom: 10px; text-align: left; }
+    .modal-section { margin-bottom: 20px; font-size: 15px; line-height: 1.6; text-align: left; }
+    .modal-section h3 { font-size: 17px; margin: 0 0 8px 0; color: #333; display: flex; align-items: center; font-weight: bold; }
+    .modal-section ul { margin: 0; padding-left: 22px; color: #555; }
+    .modal-section li { margin-bottom: 6px; }
+    .version-tag { display: inline-block; background: #e8eaed; padding: 3px 10px; border-radius: 12px; font-size: 13px; color: #555; margin-left: 10px; vertical-align: middle; font-weight: normal; }
+    .highlight { color: #ea4335; font-weight: bold; }
 </style>
 </head>
 <body>
@@ -189,6 +205,7 @@
         <button class="btn btn-save" onclick="cloudSave()">☁️ 存檔</button>
         <button class="btn btn-clear" onclick="clearForm()">🧹 清除</button>
         <button class="btn btn-print" onclick="window.print()">🖨️ 轉PDF</button>
+        <button class="btn btn-info" onclick="showInfo()">📖 說明</button>
     </div>
 </div>
 
@@ -281,6 +298,38 @@
         <div class="footer-container">
             <div>班級導師: <input type="text" id="teacherName"></div>
             <div class="footer-note">《請於隔週一交回存檔，期末發回，謝謝！》</div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="infoModal" onclick="closeInfo()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <button class="modal-close" onclick="closeInfo()">✖</button>
+        <h2 class="modal-title">遠東幼兒園學習區紀錄系統 <span class="version-tag">版本：v8.0.0</span></h2>
+        
+        <div class="modal-section">
+            <h3>📱 如何安裝至手機桌面 (免下載APP)</h3>
+            <ul>
+                <li><strong>蘋果 iOS (Safari)：</strong>點擊瀏覽器下方導覽列的「<strong>分享</strong>」圖示 (方塊帶向上箭頭)，下滑選擇「<strong>加入主畫面</strong>」即可。</li>
+                <li><strong>安卓 Android (Chrome)：</strong>點擊右上角「三個點」選單，選擇「<strong>安裝應用程式</strong>」或「加到主畫面」。</li>
+            </ul>
+        </div>
+
+        <div class="modal-section">
+            <h3>🔑 Google 登入常見問題</h3>
+            <ul>
+                <li><strong>安全性警示或未驗證警告：</strong>由於此軟體為專屬個人雲端應用，登入時若畫面出現「Google 尚未驗證這個應用程式」，請點擊左下角的「<span class="highlight">進階</span>」，再選擇「<span class="highlight">前往遠東幼兒園學習區紀錄系統 (不安全)</span>」即可正常授權連線。</li>
+                <li><strong>權限核取：</strong>登入期間請務必<span class="highlight">勾選允許</span>編輯您的試算表與雲端硬碟檔案，若未勾選，系統將無法為您建立資料夾、存檔與備份相片。</li>
+            </ul>
+        </div>
+
+        <div class="modal-section">
+            <h3>📝 基本操作與刪除流程</h3>
+            <ul>
+                <li><strong>載入舊檔案：</strong>在頂部切換至您要調整的「座號」，點擊「📥 載入」，系統會從您的個人雲端硬碟中完整復原文字資料與歷史相片。</li>
+                <li><strong>存檔與覆蓋：</strong>編輯完畢點擊「☁️ 存檔」時，系統會以<strong>座號</strong>為基準。若該座號已存過檔，新內容會直接覆蓋舊帳，不會重疊。</li>
+                <li><strong>連動移除相片：</strong>點擊相片格右上角的「✖」按鈕並確認後，系統不僅會清空畫面，還會<span class="highlight">同步將 Google 雲端硬碟中的原圖刪除</span>，幫您的個人空間省下大量容量！</li>
+            </ul>
         </div>
     </div>
 </div>
