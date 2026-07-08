@@ -1,5 +1,5 @@
-// 【重要】版本號升為 v8，強制讓瀏覽器拋棄舊快取，讀取全新的獨立刪除與說明視窗功能
-const CACHE_NAME = 'learn-record-v8';
+// 版本號升為 v9，確保讀取全新的詞庫複製功能
+const CACHE_NAME = 'learn-record-v9';
 const urlsToCache = [
   './',
   './index.html',
