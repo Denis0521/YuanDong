@@ -1,5 +1,5 @@
-// 版本號升為 v4，強迫瀏覽器讀取最新的完美排版
-const CACHE_NAME = 'learn-record-v4';
+// 版本號升為 v5，確保手機抓取全新的「響應式」排版
+const CACHE_NAME = 'learn-record-v5';
 const urlsToCache = [
   './',
   './index.html',
@@ -7,7 +7,6 @@ const urlsToCache = [
   './manifest.json'
 ];
 
-// 安裝時進行快取
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -16,7 +15,6 @@ self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
-// 啟用並清除舊快取
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys => {
@@ -32,7 +30,6 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// 攔截網路請求，若沒網路則讀取快取
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
