@@ -1,5 +1,5 @@
-// 版本號升級為 v11，強制讓瀏覽器拋棄舊快取，載入 A4 預覽放大縮小功能
-const CACHE_NAME = 'learn-record-v10';
+// 版本號升級，強制讓瀏覽器拋棄舊快取，載入發行版與 PDF 檔名動態修正功能
+const CACHE_NAME = 'learn-record-v11';
 const urlsToCache = [
   './',
   './index.html',

@@ -176,7 +176,7 @@
         <button class="btn btn-load" onclick="cloudLoad()">📥 載入</button>
         <button class="btn btn-save" onclick="cloudSave()">☁️ 存檔</button>
         <button class="btn btn-clear" onclick="clearForm()">🧹 清除</button>
-        <button class="btn btn-print" onclick="window.print()">🖨️ 轉PDF</button>
+        <button class="btn btn-print" onclick="printToPDF()">🖨️ 轉PDF</button>
         <button class="btn btn-dict" onclick="openDictModal()">💡 重點能力</button>
         <button class="btn btn-info" onclick="showInfo()">📖 說明</button>
     </div>
@@ -278,8 +278,16 @@
 <div class="modal-overlay" id="infoModal" onclick="closeInfo()">
     <div class="modal-content" onclick="event.stopPropagation()">
         <button class="modal-close" onclick="closeInfo()">✖</button>
-        <h2 class="modal-title">遠東幼兒園學習區紀錄系統 <span class="version-tag">版本：v11.0.0</span></h2>
+        <h2 class="modal-title">遠東幼兒園學習區紀錄系統 <span class="version-tag">版本：發行版</span></h2>
         
+        <div class="modal-section">
+            <h3>⚠️ Google 第一次登入常見問題處理</h3>
+            <ul>
+                <li><strong>彈出視窗遭到封鎖：</strong>第一次點擊登入時，瀏覽器可能會阻擋 Google 登入驗證視窗。請注意網址列右側，設定「永遠允許」本網站顯示彈出式視窗。</li>
+                <li><strong>出現「Google 尚未驗證這個應用程式」：</strong>因本系統為內部專屬私有工具，尚未提交 Google 官方公開發布審核。若出現此安全警告，請點擊左下角微小的<strong>「進階」</strong>連結 ➜ 再點擊<strong>「前往該網站 (不安全)」</strong>即可繼續授權。</li>
+                <li><strong>權限未完整勾選：</strong>驗證授權時，請務必勾選「Google 雲端硬碟 (Drive)」及「Google 試算表 (Sheets)」的存取與權限，否則系統將無法為您順利建立資料庫、存檔或讀取相片。</li>
+            </ul>
+        </div>
         <div class="modal-section">
             <h3>📱 如何安裝至手機桌面 (免下載APP)</h3>
             <ul>
