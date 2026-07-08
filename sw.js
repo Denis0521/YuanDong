@@ -1,5 +1,5 @@
-// 版本號升級為 v6，確保手機與電腦都會讀取最新的純淨排版與網格設計
-const CACHE_NAME = 'learn-record-v6';
+// 版本號升為 v7，確保讀取全新的四個欄位黃金比例設定
+const CACHE_NAME = 'learn-record-v7';
 const urlsToCache = [
   './',
   './index.html',
