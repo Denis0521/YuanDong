@@ -322,54 +322,6 @@ function hideLoading() { document.getElementById('loader').style.display = 'none
 function showInfo() { document.getElementById('infoModal').style.display = 'flex'; }
 function closeInfo() { document.getElementById('infoModal').style.display = 'none'; }
 
-// ==================== A4 預覽縮放系統 ====================
-let currentZoom = 1;
-
-function togglePreview() {
-    const body = document.body;
-    const isPreview = body.classList.toggle('preview-active');
-    
-    // 動態開關手機版專屬的 CSS，讓畫面回歸完美 A4 排版
-    const mobileCss = document.getElementById('mobileCss');
-    if (mobileCss) mobileCss.disabled = isPreview;
-    
-    if (isPreview) {
-        // 在手機上自動根據螢幕寬度算好縮放比例
-        const screenWidth = window.innerWidth;
-        const a4PixelWidth = 830; // 寬容度設定
-        if (screenWidth < a4PixelWidth) {
-            currentZoom = screenWidth / a4PixelWidth;
-        } else {
-            currentZoom = 1;
-        }
-        updateZoom();
-        window.scrollTo(0, 0); // 回到頂部方便查看
-    } else {
-        currentZoom = 1;
-        document.getElementById('recordForm').style.transform = '';
-        document.getElementById('recordForm').style.marginBottom = '';
-    }
-}
-
-function changeZoom(delta) {
-    currentZoom += delta;
-    if (currentZoom < 0.2) currentZoom = 0.2; // 最小縮到 20%
-    if (currentZoom > 3.0) currentZoom = 3.0; // 最大放到 300%
-    updateZoom();
-}
-
-function updateZoom() {
-    const form = document.getElementById('recordForm');
-    form.style.transform = `scale(${currentZoom})`;
-    document.getElementById('zoomLabel').innerText = Math.round(currentZoom * 100) + '%';
-    
-    // 修正縮放後底部的空白高度問題 (確保滑動順暢)
-    const a4Height = form.offsetHeight;
-    const scaledHeight = a4Height * currentZoom;
-    const diff = a4Height - scaledHeight;
-    form.style.marginBottom = `-${diff}px`; 
-}
-
 // ==================== 300 條重點能力詞庫資料 ====================
 const dictData = {
     "美勞區": ["喜歡探索色彩，畫作充滿想像力。","能運用多種媒材，展現豐富創造力。","握筆姿勢進步，線條描繪越來越穩。","能專注剪紙，手眼協調能力提升了。","對黏土捏塑有興趣，手部小肌肉靈活。","喜歡動手做勞作，展現獨特藝術美感。","能大膽運用色彩，表達內心的想法。","撕貼技巧熟練，完成品十分精美。","塗鴉時充滿自信，能分享創作故事。","喜歡嘗試新畫材，發揮無限創意。","運用水彩畫畫，色彩層次十分豐富。","能耐心完成作品，專注力值得肯定。","剪刀使用越來越順手，能剪出形狀。","喜歡摺紙活動，空間概念逐漸成形。","能運用廢棄物，改造成有趣的玩具。","畫作構圖完整，能畫出具體的事物。","透過玩色遊戲，增進了視覺敏銳度。","樂於分享畫作，口語表達能力進步。","能仔細觀察事物，並表現在畫作上。","捏塑立體造型，空間感知能力提升。","手指畫充滿童趣，觸覺刺激發展好。","喜歡拓印遊戲，發現圖案的變化。","能獨立完成勞作，自信心大大增加。","著色不超線，手部控制能力很好。","運用點線面元素，豐富了畫面層次。","喜歡串珠珠，精細動作越來越棒了。","能用畫筆畫出家人，情感表達豐富。","享受玩泥巴的樂趣，觸覺發展良好。","剪貼形狀組合，激發了幾何想像力。","畫畫時充滿笑容，十分享受創作。","喜歡揉捏黏土，增進手掌的力量。","能仔細黏貼素材，做事態度很細心。","對色彩敏銳，能調配出美麗的顏色。","運用樹葉作畫，親近大自然的美。","能夠收拾畫具，養成良好的好習慣。","勞作充滿巧思，展現解決問題能力。","喜歡玩印章，對圖騰感到十分好奇。","畫圖能表達情緒，是很好的抒發。","能與同伴合作畫畫，發揮團隊精神。","剪紙對稱圖形，理解了對稱的概念。","喜歡做卡片，懂得表達感恩的心。","運用毛線創作，體驗不同材質的美。","畫作充滿活力，展現出開朗的個性。","能細心妝點作品，美感經驗大提升。","運用海綿蓋印，訓練手腕靈活度。","喜歡玩沙畫，專注力與耐心俱佳。","能夠大面積塗色，手背肌肉更有力。","透過捏麵人，認識傳統藝術之美。","勞作設計獨特，具有個人風格特色。","畫作內容豐富，展現敏銳觀察力。"],
