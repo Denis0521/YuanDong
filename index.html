@@ -9,12 +9,11 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="學習區紀錄">
 <link rel="apple-touch-icon" href="icon-192.png">
-
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 
 <style>
-    /* 修正 1：padding-top 加大到 110px，徹底避開手機版雙行選單的遮擋 */
-    body { background-color: #e8eaed; font-family: "標楷體", BiauKai, "Microsoft JhengHei", sans-serif; margin: 0; padding: 0; padding-top: 110px; display: flex; justify-content: center; }
+    /* 網頁版介面：恢復正常頂部空間，不再過度下推 */
+    body { background-color: #e8eaed; font-family: "標楷體", BiauKai, "Microsoft JhengHei", sans-serif; margin: 0; padding: 0; padding-top: 60px; display: flex; justify-content: center; }
     .top-bar { position: fixed; top: 0; left: 0; right: 0; background-color: #1a73e8; color: white; padding: 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
     .top-bar-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: center; width: 100%; }
     .seat-input { padding: 4px; font-size: 14px; border-radius: 4px; border: none; width: 50px; text-align: center; font-weight: bold; }
@@ -26,12 +25,14 @@
     .btn-print { background-color: #ea4335; }
     .btn-clear { background-color: #9b59b6; }
 
-    .a4-page { width: 210mm; height: 297mm; background: white; box-shadow: 0 5px 15px rgba(0,0,0,0.3); padding: 4mm 12mm 12mm 12mm; box-sizing: border-box; position: relative; margin-bottom: 30px; overflow: hidden; }
-    h1 { text-align: center; font-size: 19px; margin: 0 0 4px 0; font-weight: bold; letter-spacing: 0.5px; }
+    /* 基礎 A4 紙張設定 */
+    .a4-page { width: 210mm; height: 297mm; background: white; box-shadow: 0 5px 15px rgba(0,0,0,0.3); padding: 10mm 15mm 10mm 15mm; box-sizing: border-box; position: relative; margin-bottom: 30px; overflow: hidden; }
+    
+    h1 { text-align: center; font-size: 19px; margin: 0 0 6px 0; font-weight: bold; letter-spacing: 0.5px; }
     .title-input { font-size: 19px; font-family: inherit; border: none; border-bottom: 1px solid #000; text-align: center; outline: none; font-weight: bold; background: transparent; }
     .title-input.year { width: 45px; } .title-input.term { width: 25px; }
     
-    .header-info { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 4px; padding: 0 2px; }
+    .header-info { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px; padding: 0 2px; }
     .header-info div { white-space: nowrap; }
     .header-info input, .header-info select { font-size: 14px; font-family: inherit; border: none; border-bottom: 1px solid #000; outline: none; text-align: center; background: transparent; }
     .header-info select { border: 1px solid #ccc; border-radius: 3px; padding: 1px; }
@@ -39,31 +40,35 @@
 
     .table-wrapper { width: 100%; }
     
-    /* 保持 1px 細線外框 */
+    /* 表格外框統一為 1px 細線 */
     table.main-table { width: 100%; border-collapse: collapse; border: 1px solid #000; table-layout: fixed; }
-    table.main-table td { border: 1px solid #000; padding: 2px 4px; vertical-align: top; }
+    table.main-table td { border: 1px solid #000; padding: 0; vertical-align: top; } /* 取消 td 預設 padding，改由內部 div 控制 */
     
-    .checkbox-cell { text-align: left; font-size: 13px; vertical-align: middle !important; padding-left: 10px !important; height: 20px; }
+    .checkbox-cell { padding: 4px 6px !important; text-align: left; font-size: 13px; vertical-align: middle !important; height: 24px; }
     .checkbox-cell input[type="checkbox"] { transform: scale(1.1); margin-right: 3px; vertical-align: middle; cursor: pointer; }
     .checkbox-icon { font-size: 15px; margin-right: 3px; vertical-align: middle; }
 
-    /* 修正 2：大幅拉高區塊總高度以填滿 A4，並將多出來的高度全部配給照片區 */
-    .photo-cell { display: flex; flex-direction: column; height: 430px; padding: 0 !important; box-sizing: border-box; }
-    .photo-area { height: 350px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #000; cursor: pointer; overflow: hidden; position: relative; background-color: #f9f9f9; -webkit-tap-highlight-color: transparent; display: block; }
+    /* 復刻原稿比例：總高度 410px (照片 260px + 文字 150px)，完美填滿 A4 下半部 */
+    .photo-cell { display: flex; flex-direction: column; height: 410px; box-sizing: border-box; }
+    .photo-area { height: 260px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #000; cursor: pointer; overflow: hidden; position: relative; background-color: #f9f9f9; -webkit-tap-highlight-color: transparent; }
     .photo-area:active { background-color: #e0e0e0; }
     .photo-area img { width: 100%; height: 100%; object-fit: contain; display: none; }
     .photo-placeholder { color: #888; font-size: 12px; text-align: center; padding: 2px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; pointer-events: none; }
     .delete-btn { position: absolute; top: 4px; right: 4px; background-color: rgba(244, 67, 54, 0.85); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; line-height: 22px; text-align: center; cursor: pointer; z-index: 10; display: none; }
     
-    /* 修正 3：文字區極致壓縮，拿掉所有不必要的留白，高度降到最低 */
-    .text-area { padding: 4px 6px; font-size: 12px; display: flex; flex-direction: column; flex-grow: 1; justify-content: flex-start; gap: 2px; }
-    .inline-field { display: flex; align-items: center; white-space: nowrap; margin-bottom: 0px; } 
-    .block-field { display: flex; flex-direction: column; margin-bottom: 0px; } 
-    .text-area input[type="text"] { font-size: 12px; font-family: inherit; border: none; outline: none; width: 100%; background: transparent; padding: 0; margin: 0; }
-    .text-label { font-weight: normal; flex-shrink: 0; font-size: 12px; }
-    .ability-box { border-top: 1px solid #000; padding-top: 2px; display: flex; flex-direction: column; margin-top: auto; } 
+    /* 文字區排版 100% 復刻 */
+    .text-area { padding: 4px 6px; font-size: 13px; display: flex; flex-direction: column; flex-grow: 1; }
+    .inline-field { display: flex; align-items: center; white-space: nowrap; margin-bottom: 2px; }
+    .block-field { display: flex; flex-direction: column; margin-bottom: 16px; /* 強制留出約一行的空白高度 */ }
+    .text-area input[type="text"] { font-size: 13px; font-family: inherit; border: none; outline: none; width: 100%; background: transparent; padding: 0; margin: 0; }
+    .text-label { font-weight: normal; flex-shrink: 0; font-size: 13px; }
     
-    .footer-container { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 4px 4px 0 4px; }
+    /* 重點能力：加頂部 1px 黑線，並強制推到底部 */
+    .ability-box { border-top: 1px solid #000; padding-top: 4px; display: flex; flex-direction: row; margin-top: auto; align-items: center; }
+    .ability-box input { flex-grow: 1; }
+    
+    /* 底部導師與備註 */
+    .footer-container { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 6px 4px 0 4px; }
     .footer-container input { font-size: 13px; font-family: inherit; border: none; border-bottom: 1px solid #000; outline: none; width: 85px; text-align: center; background: transparent; }
     .footer-note { font-weight: bold; font-size: 12px; }
     
@@ -71,15 +76,15 @@
     .spinner { border: 5px solid #f3f3f3; border-top: 5px solid #34a853; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    @media screen and (max-width: 800px) { .a4-page { width: 100%; height: auto; min-height: auto; box-shadow: none; } }
+    @media screen and (max-width: 800px) { .a4-page { width: 100%; height: auto; min-height: auto; box-shadow: none; margin-top: 10px; } }
 
+    /* PDF 輸出專用：去除陰影、選單，保留完美邊距 */
     @media print {
         @page { margin: 0; size: A4 portrait; }
         body { background-color: white; padding: 0; margin: 0; display: block; }
         .top-bar, .delete-btn { display: none !important; }
         .table-wrapper { overflow-x: visible; }
-        /* 修正 4：給 PDF 頂部 12mm 的留白，不再死死貼在最上面 */
-        .a4-page { box-shadow: none; margin: 0 auto; padding: 12mm 12mm 10mm 12mm; width: 210mm; height: 296mm; overflow: hidden; page-break-after: always; }
+        .a4-page { box-shadow: none; margin: 0 auto; padding: 10mm 15mm 10mm 15mm; width: 210mm; height: 296mm; overflow: hidden; page-break-after: always; }
         input { border-bottom: none !important; }
         .header-info select { border: none; appearance: none; -webkit-appearance: none; }
         .photo-placeholder { display: none; }
