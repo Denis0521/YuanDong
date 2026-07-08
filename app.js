@@ -1,5 +1,5 @@
-// ==================== 請替換成您的憑證資訊 ====================
-const CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
+// ==================== 您的專屬憑證資訊 ====================
+const CLIENT_ID = '130737953356-9t11ein5pe6l7ihvmbnm39jeg9beel9s.apps.googleusercontent.com';
 // ============================================================
 
 let tokenClient;
@@ -242,7 +242,7 @@ function getFormData() {
     return data;
 }
 
-// 儲存表單資料至雲端試算表 (直接用 REST API 取代原本的 GAS)
+// 儲存表單資料至雲端試算表
 async function cloudSave() {
     const data = getFormData();
     if (!data.seatNumber || !data.studentName) { 
