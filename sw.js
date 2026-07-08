@@ -1,5 +1,5 @@
-// 版本號升級為 v3，強迫瀏覽器抓取最新的 A4 排版！
-const CACHE_NAME = 'learn-record-v3';
+// 版本號升為 v4，強迫瀏覽器讀取最新的完美排版
+const CACHE_NAME = 'learn-record-v4';
 const urlsToCache = [
   './',
   './index.html',
@@ -13,7 +13,7 @@ self.addEventListener('install', event => {
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(urlsToCache))
   );
-  self.skipWaiting(); // 強制立即接管
+  self.skipWaiting();
 });
 
 // 啟用並清除舊快取
