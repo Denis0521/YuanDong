@@ -13,12 +13,12 @@
 
 <style>
     /* ==================================================== */
-    /* 1. 電腦版與預設版面 (保留完美 A4 比例)                */
+    /* 1. 電腦版與預設版面 (無底線、字體放大、完美 A4 比例)   */
     /* ==================================================== */
     body { background-color: #e8eaed; font-family: "標楷體", BiauKai, "Microsoft JhengHei", sans-serif; margin: 0; padding: 0; padding-top: 60px; display: flex; justify-content: center; }
     .top-bar { position: fixed; top: 0; left: 0; right: 0; background-color: #1a73e8; color: white; padding: 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
     .top-bar-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: center; width: 100%; }
-    .seat-input { padding: 4px; font-size: 14px; border-radius: 4px; border: none; width: 50px; text-align: center; font-weight: bold; }
+    .seat-input { padding: 4px; font-size: 14px; border-radius: 4px; border: none; width: 50px; text-align: center; font-weight: bold; background: #fff; }
     .btn { padding: 6px 12px; font-size: 13px; cursor: pointer; color: white; border: none; border-radius: 4px; font-weight: bold; font-family: "Microsoft JhengHei", sans-serif; }
     .btn:active { transform: scale(0.95); }
     .btn-auth { background-color: #4285F4; }
@@ -29,88 +29,96 @@
 
     .a4-page { width: 210mm; height: 297mm; background: white; box-shadow: 0 5px 15px rgba(0,0,0,0.3); padding: 10mm 15mm 10mm 15mm; box-sizing: border-box; position: relative; margin-bottom: 30px; overflow: hidden; }
     
-    h1 { text-align: center; font-size: 19px; margin: 0 0 6px 0; font-weight: bold; letter-spacing: 0.5px; }
-    .title-input { font-size: 19px; font-family: inherit; border: none; border-bottom: 1px solid #000; text-align: center; outline: none; font-weight: bold; background: transparent; }
-    .title-input.year { width: 45px; } .title-input.term { width: 25px; }
+    /* 標題維持 19px，無底線，螢幕顯示淡灰底色 */
+    h1 { text-align: center; font-size: 19px; margin: 0 0 8px 0; font-weight: bold; letter-spacing: 0.5px; }
+    .title-input { font-size: 19px; font-family: inherit; border: none; text-align: center; outline: none; font-weight: bold; background: rgba(0,0,0,0.04); border-radius: 4px; }
+    .title-input.year { width: 50px; } .title-input.term { width: 30px; }
     
-    .header-info { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px; padding: 0 2px; }
+    /* 基本資料加大為 16px，無底線 */
+    .header-info { display: flex; justify-content: space-between; font-size: 16px; margin-bottom: 8px; padding: 0 2px; align-items: center;}
     .header-info div { white-space: nowrap; }
-    .header-info input, .header-info select { font-size: 14px; font-family: inherit; border: none; border-bottom: 1px solid #000; outline: none; text-align: center; background: transparent; }
-    .header-info select { border: 1px solid #ccc; border-radius: 3px; padding: 1px; }
-    .header-info input.name { width: 70px; } .header-info input.seat { width: 30px; } .header-info input.date { width: 90px; }
+    .header-info input, .header-info select { font-size: 16px; font-family: inherit; border: none; outline: none; text-align: center; background: rgba(0,0,0,0.04); border-radius: 4px; padding: 2px 4px; }
+    .header-info input.name { width: 80px; } .header-info input.seat { width: 35px; } .header-info input.date { width: 100px; }
 
     .table-wrapper { width: 100%; }
     table.main-table { width: 100%; border-collapse: collapse; border: 1px solid #000; table-layout: fixed; }
     table.main-table td { border: 1px solid #000; padding: 0; vertical-align: top; } 
     
-    .checkbox-cell { padding: 4px 10px !important; text-align: left; font-size: 14px; vertical-align: middle !important; height: 35px; }
-    .checkbox-cell input[type="checkbox"] { transform: scale(1.1); margin-right: 3px; vertical-align: middle; cursor: pointer; }
-    .checkbox-icon { font-size: 15px; margin-right: 3px; vertical-align: middle; }
+    /* 勾選區加大為 16px */
+    .checkbox-cell { padding: 4px 10px !important; text-align: left; font-size: 16px; vertical-align: middle !important; height: 38px; }
+    .checkbox-cell input[type="checkbox"] { transform: scale(1.2); margin-right: 4px; vertical-align: middle; cursor: pointer; }
+    .checkbox-icon { font-size: 16px; margin-right: 3px; vertical-align: middle; }
 
+    /* 高度調配：照片 250 + 文字 160 = 410px，完美填滿 A4 */
     .photo-cell { display: flex; flex-direction: column; height: 410px; box-sizing: border-box; }
-    .photo-area { height: 260px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #000; cursor: pointer; overflow: hidden; position: relative; background-color: #f9f9f9; -webkit-tap-highlight-color: transparent; }
+    .photo-area { height: 250px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #000; cursor: pointer; overflow: hidden; position: relative; background-color: #f9f9f9; -webkit-tap-highlight-color: transparent; }
     .photo-area:active { background-color: #e0e0e0; }
     .photo-area img { width: 100%; height: 100%; object-fit: contain; display: none; }
     .photo-placeholder { color: #888; font-size: 12px; text-align: center; padding: 2px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; pointer-events: none; }
     .delete-btn { position: absolute; top: 4px; right: 4px; background-color: rgba(244, 67, 54, 0.85); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; line-height: 22px; text-align: center; cursor: pointer; z-index: 10; display: none; }
     
-    .text-area { padding: 4px 6px; font-size: 13px; display: flex; flex-direction: column; justify-content: space-between; height: 150px; box-sizing: border-box; }
-    .tf-row { display: flex; align-items: center; min-height: 20px; width: 100%; }
-    .tf-row input { flex-grow: 1; font-size: 13px; font-family: inherit; border: none; outline: none; background: transparent; padding: 0 4px; border-bottom: 1px dotted #999; }
-    .top-line { border-top: 1px solid #000; padding-top: 4px; margin-top: 2px; }
-    .text-label { font-weight: normal; flex-shrink: 0; font-size: 13px; }
+    /* 文字區加大為 15px，無底線 */
+    .text-area { padding: 6px 8px; font-size: 15px; display: flex; flex-direction: column; justify-content: space-between; height: 160px; box-sizing: border-box; }
+    .tf-row { display: flex; align-items: center; width: 100%; }
+    .tf-row input { flex-grow: 1; font-size: 15px; font-family: inherit; border: none; outline: none; background: rgba(0,0,0,0.04); border-radius: 4px; padding: 2px 6px; min-height: 24px; }
+    .top-line { border-top: 1px solid #000; padding-top: 6px; margin-top: 4px; }
+    .text-label { font-weight: normal; flex-shrink: 0; font-size: 15px; }
     
-    .footer-container { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 6px 4px 0 4px; }
-    .footer-container input { font-size: 13px; font-family: inherit; border: none; border-bottom: 1px solid #000; outline: none; width: 85px; text-align: center; background: transparent; }
-    .footer-note { font-weight: bold; font-size: 12px; }
+    /* 底部導師與備註加大為 15px */
+    .footer-container { display: flex; justify-content: space-between; align-items: center; font-size: 15px; padding: 8px 4px 0 4px; }
+    .footer-container input { font-size: 15px; font-family: inherit; border: none; outline: none; width: 100px; text-align: center; background: rgba(0,0,0,0.04); border-radius: 4px; padding: 2px 4px;}
+    .footer-note { font-weight: bold; font-size: 14px; }
 
     .loader-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 3000; justify-content: center; align-items: center; flex-direction: column; color: white; font-family: "Microsoft JhengHei", sans-serif; font-size: 16px; text-align: center;}
     .spinner { border: 5px solid #f3f3f3; border-top: 5px solid #34a853; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     /* ==================================================== */
-    /* 2. 手機螢幕友善介面 (App 卡片化，打字超舒適)           */
+    /* 2. 手機螢幕友善介面 (雙欄網格設計，長短輸入框自動適應) */
     /* ==================================================== */
     @media screen and (max-width: 800px) {
         body { padding-top: 110px; background-color: #f0f2f5; }
-        .a4-page { width: 100%; height: auto; box-shadow: none; padding: 15px; margin-bottom: 0; border-radius: 0; }
+        .a4-page { width: 100%; height: auto; box-shadow: none; padding: 15px; margin-bottom: 0; border-radius: 0; margin-top: 10px; }
         
-        /* 標題與基本資料垂直排列 */
-        .header-info { flex-wrap: wrap; gap: 10px; }
-        .header-info div { width: 100%; display: flex; flex-direction: column; align-items: flex-start; }
-        .header-info input, .header-info select { width: 100%; margin-left: 0; margin-top: 6px; font-size: 16px; height: 40px; border: 1px solid #ccc; border-radius: 6px; padding: 0 10px; box-sizing: border-box; text-align: left; background: #fff; }
+        /* 標題與基本資料採用 2x2 完美網格，解決選單太長的問題 */
+        h1 { font-size: 20px; line-height: 1.5; margin-bottom: 15px; }
+        .title-input { background: #fff; border: 1px solid #ccc !important; }
+        .header-info { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
+        .header-info div { display: flex; flex-direction: row; align-items: center; width: 100%; white-space: nowrap; }
+        .header-info input, .header-info select { width: 100%; min-width: 0; margin-left: 6px; font-size: 16px; height: 38px; border: 1px solid #ccc !important; border-radius: 6px; padding: 0 8px; background: #fff; text-align: left; }
         
-        /* 打破表格限制，變成區塊 */
         table.main-table, table.main-table tbody { display: block; width: 100%; border: none; }
         table.main-table tr { display: flex; flex-wrap: wrap; width: 100%; border: none; }
         table.main-table td { display: block; border: none; }
         
-        /* 勾選區放大好點擊 */
         .checkbox-cell { width: 50%; height: 50px; display: flex; align-items: center; justify-content: flex-start; padding-left: 15px !important; border-bottom: 1px solid #eee; background: #fff;}
-        .checkbox-cell input[type="checkbox"] { transform: scale(1.5); margin-right: 8px; }
+        .checkbox-cell input[type="checkbox"] { transform: scale(1.5); margin-right: 10px; }
         
-        /* 照片與文字輸入區變身「大型卡片」 */
         td[colspan="3"] { width: 100%; margin-top: 20px; border: 2px solid #1a73e8 !important; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); background: #fff; }
-        
         .photo-cell { height: auto; }
         .photo-area { height: 280px; background-color: #f8f9fa; border-bottom: 2px solid #1a73e8; }
+        
+        /* 手機文字區：解決長短不一 */
         .text-area { height: auto; padding: 15px; gap: 12px; }
-        .tf-row { flex-direction: column; align-items: flex-start; }
+        .tf-row { flex-direction: column; align-items: flex-start; width: 100%; }
+        
+        /* 紀錄日期：短框，維持在一行 */
+        .tf-row.inline-mobile { flex-direction: row; align-items: center; } 
+        .tf-row.inline-mobile input[type="text"] { width: auto; flex-grow: 1; margin-left: 10px; margin-top: 0; }
+        
         .text-label { font-size: 15px; color: #1a73e8; font-weight: bold; margin-bottom: 4px; }
-        
-        /* 手機輸入框優化 (16px 防止 iOS 畫面亂放大) */
-        .tf-row input[type="text"] { border: 1px solid #ccc !important; height: 45px; font-size: 16px !important; border-radius: 6px; padding: 0 12px !important; background: #fff; width: 100%; box-sizing: border-box; }
+        /* 說明與能力：長框，佔滿整行 */
+        .tf-row input[type="text"] { border: 1px solid #ccc !important; height: 45px; font-size: 16px !important; border-radius: 6px; padding: 0 12px !important; background: #fff; width: 100%; box-sizing: border-box; margin-top: 4px; }
         .tf-row input[type="text"]:focus { border-color: #1a73e8 !important; outline: 2px solid rgba(26,115,232,0.2); }
-        .top-line { border: none; padding: 0; margin-top: 8px; }
+        .top-line { border: none; padding: 0; margin-top: 10px; }
         
-        /* 底部導師簽名 */
-        .footer-container { flex-direction: column; gap: 15px; align-items: flex-start; padding-top: 25px; }
-        .footer-container div { width: 100%; display: flex; flex-direction: column; }
-        .footer-container input { width: 100%; height: 45px; font-size: 16px; border: 1px solid #ccc; border-radius: 6px; text-align: left; padding: 0 12px; margin-top: 6px; box-sizing: border-box; background: #fff;}
+        .footer-container { display: flex; flex-direction: row; flex-wrap: wrap; justify-content: space-between; align-items: center; padding-top: 25px; gap: 15px; }
+        .footer-container div { width: 100%; display: flex; flex-direction: row; align-items: center; }
+        .footer-container input { flex-grow: 1; height: 45px; font-size: 16px; border: 1px solid #ccc !important; border-radius: 6px; text-align: left; padding: 0 12px; margin-left: 10px; background: #fff;}
     }
 
     /* ==================================================== */
-    /* 3. 列印與 PDF 輸出專用 (強制鎖死 A4 完美比例)          */
+    /* 3. 列印與 PDF 輸出專用 (徹底隱藏輔助灰底，完美純淨版面) */
     /* ==================================================== */
     @media print {
         @page { margin: 0; size: A4 portrait; }
@@ -118,42 +126,38 @@
         .top-bar, .delete-btn { display: none !important; }
         .table-wrapper { overflow-x: visible; }
         
-        /* 強制還原 A4 紙張與邊距 */
         .a4-page { box-shadow: none !important; margin: 0 auto !important; padding: 10mm 15mm 10mm 15mm !important; width: 210mm !important; height: 296mm !important; overflow: hidden !important; page-break-after: always !important; display: block !important; border-radius: 0 !important; }
         
-        /* 強制還原標題與表頭同行顯示 */
-        .header-info { flex-direction: row !important; flex-wrap: nowrap !important; }
+        .header-info { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; }
         .header-info div { width: auto !important; display: flex !important; flex-direction: row !important; align-items: center !important; }
-        .header-info input, .header-info select { width: auto !important; margin-left: 2px !important; margin-top: 0 !important; font-size: 14px !important; height: auto !important; border: none !important; border-radius: 0 !important; border-bottom: 1px solid #000 !important; padding: 0 !important; text-align: center !important; background: transparent !important; }
-        
-        /* 強制還原 2x2 表格結構與 1px 外框 */
+        /* 列印時強制透明無底色 */
+        .header-info input, .header-info select { width: auto !important; margin-left: 2px !important; margin-top: 0 !important; font-size: 16px !important; height: auto !important; border: none !important; border-radius: 0 !important; padding: 0 !important; text-align: center !important; background: transparent !important; }
+        .title-input { background: transparent !important; border: none !important; }
+
         table.main-table { display: table !important; width: 100% !important; border-collapse: collapse !important; border: 1px solid #000 !important; }
         table.main-table tbody { display: table-row-group !important; }
         table.main-table tr { display: table-row !important; flex-wrap: nowrap !important; width: auto !important; }
         table.main-table td { display: table-cell !important; border: 1px solid #000 !important; }
         
-        .checkbox-cell { width: auto !important; height: 35px !important; display: table-cell !important; padding: 4px 10px !important; }
-        .checkbox-cell input[type="checkbox"] { transform: scale(1.1) !important; }
+        .checkbox-cell { width: auto !important; height: 38px !important; display: table-cell !important; padding: 4px 10px !important; }
+        .checkbox-cell input[type="checkbox"] { transform: scale(1.2) !important; }
         
         td[colspan="3"] { display: table-cell !important; width: 50% !important; margin-top: 0 !important; border: 1px solid #000 !important; border-radius: 0 !important; box-shadow: none !important; }
         
-        /* 強制還原 6:4 黃金比例 */
         .photo-cell { height: 410px !important; }
-        .photo-area { height: 260px !important; background-color: transparent !important; border-bottom: 1px solid #000 !important; }
+        .photo-area { height: 250px !important; background-color: transparent !important; border-bottom: 1px solid #000 !important; }
         
-        /* 強制還原文字區域的排版與細線 */
-        .text-area { height: 150px !important; padding: 4px 6px !important; background-color: transparent !important; gap: 0 !important; }
+        /* 列印時文字區與輸入框全透明 */
+        .text-area { height: 160px !important; padding: 6px 8px !important; background-color: transparent !important; gap: 0 !important; }
         .tf-row { flex-direction: row !important; align-items: center !important; }
-        .text-label { font-size: 13px !important; color: #000 !important; font-weight: normal !important; margin-bottom: 0 !important; }
-        .tf-row input[type="text"] { border: none !important; height: auto !important; font-size: 13px !important; border-radius: 0 !important; margin-top: 0 !important; padding: 0 4px !important; background: transparent !important; border-bottom: 1px dotted #999 !important; }
-        .top-line { border-top: 1px solid #000 !important; padding-top: 4px !important; margin-top: 2px !important; }
+        .text-label { font-size: 15px !important; color: #000 !important; font-weight: normal !important; margin-bottom: 0 !important; }
+        .tf-row input[type="text"] { border: none !important; height: auto !important; font-size: 15px !important; border-radius: 0 !important; margin-top: 0 !important; padding: 0 6px !important; background: transparent !important; }
+        .top-line { border-top: 1px solid #000 !important; padding-top: 6px !important; margin-top: 4px !important; }
         
-        /* 強制還原底部簽名區 */
-        .footer-container { flex-direction: row !important; align-items: center !important; padding-top: 6px !important; }
+        .footer-container { display: flex !important; flex-direction: row !important; align-items: center !important; padding-top: 8px !important; gap: 0 !important;}
         .footer-container div { width: auto !important; display: block !important; }
-        .footer-container input { width: 85px !important; height: auto !important; font-size: 13px !important; border: none !important; border-bottom: 1px solid #000 !important; text-align: center !important; padding: 0 !important; margin-top: 0 !important; background: transparent !important; }
+        .footer-container input { width: 100px !important; height: auto !important; font-size: 15px !important; border: none !important; text-align: center !important; padding: 0 !important; margin-top: 0 !important; margin-left:0 !important; background: transparent !important; }
         
-        input { border-bottom: none !important; }
         .header-info select { border: none !important; appearance: none; -webkit-appearance: none; }
         .photo-placeholder { display: none !important; }
     }
@@ -183,7 +187,7 @@
     <div class="header-info">
         <div>班級: <select id="className"><option value="大班">大班</option><option value="中班">中班</option><option value="小班" selected>小班</option></select></div>
         <div>幼生姓名: <input type="text" class="name" id="studentName"></div>
-        <div>座號: <input type="text" class="seat" id="seatNumber" readonly style="background:#eee;"></div>
+        <div>座號: <input type="text" class="seat" id="seatNumber" readonly></div>
         <div>紀錄日期: <input type="text" class="date" id="recordDate" placeholder=" "></div>
     </div>
 
@@ -207,7 +211,7 @@
                         <button class="delete-btn no-print" id="del1" onclick="removeImage(1, event)" title="刪除">✖</button>
                         <input type="file" id="file1" style="display:none;" accept="image/*" onchange="processImage(event, 1)">
                         <div class="text-area">
-                            <div class="tf-row"><span class="text-label">▶紀錄日期：</span><input type="text" id="pd1"></div>
+                            <div class="tf-row inline-mobile"><span class="text-label">▶紀錄日期：</span><input type="text" id="pd1"></div>
                             <div class="tf-row"><span class="text-label">▶照片說明：</span></div>
                             <div class="tf-row"><input type="text" id="pdesc1"></div>
                             <div class="tf-row top-line"><span class="text-label">★重點能力：</span></div>
@@ -221,7 +225,7 @@
                         <button class="delete-btn no-print" id="del2" onclick="removeImage(2, event)" title="刪除">✖</button>
                         <input type="file" id="file2" style="display:none;" accept="image/*" onchange="processImage(event, 2)">
                         <div class="text-area">
-                            <div class="tf-row"><span class="text-label">▶紀錄日期：</span><input type="text" id="pd2"></div>
+                            <div class="tf-row inline-mobile"><span class="text-label">▶紀錄日期：</span><input type="text" id="pd2"></div>
                             <div class="tf-row"><span class="text-label">▶照片說明：</span></div>
                             <div class="tf-row"><input type="text" id="pdesc2"></div>
                             <div class="tf-row top-line"><span class="text-label">★重點能力：</span></div>
@@ -238,7 +242,7 @@
                         <button class="delete-btn no-print" id="del3" onclick="removeImage(3, event)" title="刪除">✖</button>
                         <input type="file" id="file3" style="display:none;" accept="image/*" onchange="processImage(event, 3)">
                         <div class="text-area">
-                            <div class="tf-row"><span class="text-label">▶紀錄日期：</span><input type="text" id="pd3"></div>
+                            <div class="tf-row inline-mobile"><span class="text-label">▶紀錄日期：</span><input type="text" id="pd3"></div>
                             <div class="tf-row"><span class="text-label">▶照片說明：</span></div>
                             <div class="tf-row"><input type="text" id="pdesc3"></div>
                             <div class="tf-row top-line"><span class="text-label">★重點能力：</span></div>
@@ -252,7 +256,7 @@
                         <button class="delete-btn no-print" id="del4" onclick="removeImage(4, event)" title="刪除">✖</button>
                         <input type="file" id="file4" style="display:none;" accept="image/*" onchange="processImage(event, 4)">
                         <div class="text-area">
-                            <div class="tf-row"><span class="text-label">▶紀錄日期：</span><input type="text" id="pd4"></div>
+                            <div class="tf-row inline-mobile"><span class="text-label">▶紀錄日期：</span><input type="text" id="pd4"></div>
                             <div class="tf-row"><span class="text-label">▶照片說明：</span></div>
                             <div class="tf-row"><input type="text" id="pdesc4"></div>
                             <div class="tf-row top-line"><span class="text-label">★重點能力：</span></div>

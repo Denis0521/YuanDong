@@ -1,5 +1,5 @@
-// 版本號升為 v5，確保手機抓取全新的「響應式」排版
-const CACHE_NAME = 'learn-record-v5';
+// 版本號升級為 v6，確保手機與電腦都會讀取最新的純淨排版與網格設計
+const CACHE_NAME = 'learn-record-v6';
 const urlsToCache = [
   './',
   './index.html',
