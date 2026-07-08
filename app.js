@@ -47,7 +47,7 @@ window.addEventListener('load', () => {
     });
 });
 
-// 觸發 Google 登入 (已取消 prompt: 'consent'，點擊即順暢登入)
+// 觸發 Google 登入
 function handleAuthClick() {
     if (tokenClient) {
         tokenClient.requestAccessToken();
@@ -207,12 +207,37 @@ async function uploadImageToDrive(blob, filename, imgIndex) {
     }
 }
 
-function removeImage(index, event) {
+// 【更新】支援雲端刪除的移除相片功能
+async function removeImage(index, event) {
     event.preventDefault();
+    event.stopPropagation(); // 防止點擊按鈕時觸發到底下的上傳按鈕
+    
+    const fileId = cloudImageData['fileId' + index];
+    
+    // 如果雲端有這張照片，先詢問是否連同雲端檔案一起刪除
+    if (fileId) {
+        if (!confirm('確定要移除這張照片嗎？(將同時從 Google 雲端硬碟永久刪除)')) {
+            return; // 使用者按取消則不動作
+        }
+        
+        showLoading('🗑️ 正在從雲端刪除照片...');
+        try {
+            // 呼叫 Google Drive API 執行刪除
+            await fetchGoogleAPI(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
+                method: 'DELETE'
+            });
+        } catch(e) {
+            console.log('檔案可能已不在雲端', e);
+        }
+        hideLoading();
+    }
+    
+    // 清空前端畫面與暫存變數
     document.getElementById('img' + index).src = '';
     document.getElementById('img' + index).style.display = 'none';
     document.getElementById('del' + index).style.display = 'none';
     document.getElementById('ph' + index).style.display = 'block';
+    document.getElementById('ph' + index).innerText = '輕觸上傳相片 (區' + index + ')';
     document.getElementById('file' + index).value = '';
     cloudImageData['fileId' + index] = '';
 }
@@ -331,6 +356,13 @@ async function cloudLoad() {
         
         for(let c=1; c<=6; c++) {
             document.getElementById('cb'+c).checked = targetData['cb'+c] || false;
+        }
+        
+        // 【更新】填回各區的文字說明與重點能力
+        for(let i=1; i<=4; i++) {
+            if (targetData['pd'+i]) document.getElementById('pd'+i).value = targetData['pd'+i];
+            if (targetData['pdesc'+i]) document.getElementById('pdesc'+i).value = targetData['pdesc'+i];
+            if (targetData['pab'+i]) document.getElementById('pab'+i).value = targetData['pab'+i];
         }
         
         // 讀取相片二進位資料並轉為 Base64
