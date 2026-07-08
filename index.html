@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>幼兒學習區紀錄 (獨立 PWA 版)</title>
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="學習區紀錄">
+<link rel="apple-touch-icon" href="icon-192.png"> <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+<style>
+    body { background-color: #e8eaed; font-family: "標楷體", BiauKai, "Microsoft JhengHei", sans-serif; margin: 0; padding: 0; padding-top: 60px; display: flex; justify-content: center; }
+    .top-bar { position: fixed; top: 0; left: 0; right: 0; background-color: #1a73e8; color: white; padding: 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+    .top-bar-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: center; width: 100%; }
+    .seat-input { padding: 4px; font-size: 14px; border-radius: 4px; border: none; width: 50px; text-align: center; font-weight: bold; }
+    .btn { padding: 6px 12px; font-size: 13px; cursor: pointer; color: white; border: none; border-radius: 4px; font-weight: bold; font-family: "Microsoft JhengHei", sans-serif; }
+    .btn:active { transform: scale(0.95); }
+    .btn-auth { background-color: #4285F4; }
+    .btn-save { background-color: #34a853; }
+    .btn-load { background-color: #fbbc05; color: #000; }
+    .btn-print { background-color: #ea4335; }
+    .btn-clear { background-color: #9b59b6; }
+
+    .a4-page { width: 210mm; height: 297mm; background: white; box-shadow: 0 5px 15px rgba(0,0,0,0.3); padding: 4mm 12mm 12mm 12mm; box-sizing: border-box; position: relative; margin-bottom: 30px; overflow: hidden; }
+    h1 { text-align: center; font-size: 19px; margin: 0 0 4px 0; font-weight: bold; letter-spacing: 0.5px; }
+    .title-input { font-size: 19px; font-family: inherit; border: none; border-bottom: 1px solid #000; text-align: center; outline: none; font-weight: bold; background: transparent; }
+    .title-input.year { width: 45px; } .title-input.term { width: 25px; }
+    
+    .header-info { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 4px; padding: 0 2px; }
+    .header-info div { white-space: nowrap; }
+    .header-info input, .header-info select { font-size: 14px; font-family: inherit; border: none; border-bottom: 1px solid #000; outline: none; text-align: center; background: transparent; }
+    .header-info select { border: 1px solid #ccc; border-radius: 3px; padding: 1px; }
+    .header-info input.name { width: 70px; } .header-info input.seat { width: 30px; } .header-info input.date { width: 90px; }
+
+    .table-wrapper { width: 100%; }
+    table.main-table { width: 100%; border-collapse: collapse; border: 2px solid #000; table-layout: fixed; }
+    table.main-table td { border: 1px solid #000; padding: 2px 4px; vertical-align: top; }
+    
+    .checkbox-cell { text-align: left; font-size: 13px; vertical-align: middle !important; padding-left: 10px !important; height: 22px; }
+    .checkbox-cell input[type="checkbox"] { transform: scale(1.1); margin-right: 3px; vertical-align: middle; cursor: pointer; }
+    .checkbox-icon { font-size: 15px; margin-right: 3px; vertical-align: middle; }
+
+    .photo-cell { display: flex; flex-direction: column; height: 315px; padding: 0 !important; box-sizing: border-box; }
+    .photo-area { height: 165px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #000; cursor: pointer; overflow: hidden; position: relative; background-color: #f9f9f9; -webkit-tap-highlight-color: transparent; display: block; }
+    .photo-area:active { background-color: #e0e0e0; }
+    .photo-area img { width: 100%; height: 100%; object-fit: contain; display: none; }
+    .photo-placeholder { color: #888; font-size: 12px; text-align: center; padding: 2px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; pointer-events: none; }
+    .delete-btn { position: absolute; top: 4px; right: 4px; background-color: rgba(244, 67, 54, 0.85); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; line-height: 22px; text-align: center; cursor: pointer; z-index: 10; display: none; }
+    
+    .text-area { padding: 3px 6px; font-size: 12px; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between; }
+    .inline-field { display: flex; align-items: center; white-space: nowrap; margin-bottom: 1px; }
+    .block-field { display: flex; flex-direction: column; margin-bottom: 1px; }
+    .text-area input[type="text"] { font-size: 12px; font-family: inherit; border: none; outline: none; width: 100%; background: transparent; padding: 0; margin: 0; }
+    .text-label { font-weight: normal; flex-shrink: 0; font-size: 12px; }
+    .ability-box { border-top: 1px solid #000; padding-top: 2px; display: flex; flex-direction: column; }
+    
+    .footer-container { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 4px 4px 0 4px; }
+    .footer-container input { font-size: 13px; font-family: inherit; border: none; border-bottom: 1px solid #000; outline: none; width: 85px; text-align: center; background: transparent; }
+    .footer-note { font-weight: bold; font-size: 12px; }
+    
+    .loader-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 3000; justify-content: center; align-items: center; flex-direction: column; color: white; font-family: "Microsoft JhengHei", sans-serif; font-size: 16px; text-align: center;}
+    .spinner { border: 5px solid #f3f3f3; border-top: 5px solid #34a853; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    @media screen and (max-width: 800px) { .a4-page { width: 100%; height: auto; min-height: auto; box-shadow: none; } }
+
+    @media print {
+        @page { margin: 0; size: A4 portrait; }
+        body { background-color: white; padding: 0; margin: 0; display: block; }
+        .top-bar, .delete-btn { display: none !important; }
+        .table-wrapper { overflow-x: visible; }
+        .a4-page { box-shadow: none; margin: 0 auto; padding: 2mm 12mm 0mm 12mm; width: 210mm; height: 296mm; overflow: hidden; page-break-after: always; }
+        input { border-bottom: none !important; }
+        .header-info select { border: none; appearance: none; -webkit-appearance: none; }
+        .photo-placeholder { display: none; }
+        .photo-area { background-color: transparent; }
+    }
+</style>
+</head>
+<body>
+
+<div class="loader-overlay" id="loader">
+    <div class="spinner"></div>
+    <div id="loaderText">處理中...</div>
+</div>
+
+<div class="top-bar no-print">
+    <div class="top-bar-row">
+        <button id="loginBtn" class="btn btn-auth" onclick="handleAuthClick()">🔵 Google 帳號登入</button>
+        <span style="font-weight: bold; font-family: 'Microsoft JhengHei'; margin-left: 10px;">目前座號:</span>
+        <input type="number" id="ctrlSeat" class="seat-input" value="1" min="1" max="99">
+        <button class="btn btn-load" onclick="cloudLoad()">📥 載入</button>
+        <button class="btn btn-save" onclick="cloudSave()">☁️ 存檔</button>
+        <button class="btn btn-clear" onclick="clearForm()">🧹 清除</button>
+        <button class="btn btn-print" onclick="window.print()">🖨️ 轉PDF</button>
+    </div>
+</div>
+
+<div class="a4-page" id="recordForm">
+    <h1>遠東幼兒園 <input type="text" class="title-input year" id="year" placeholder=" "> 學年度 第 <input type="text" class="title-input term" id="term" placeholder=" "> 學期 幼兒學習區紀錄</h1>
+    <div class="header-info">
+        <div>班級: <select id="className"><option value="大班">大班</option><option value="中班">中班</option><option value="小班" selected>小班</option></select></div>
+        <div>幼生姓名: <input type="text" class="name" id="studentName"></div>
+        <div>座號: <input type="text" class="seat" id="seatNumber" readonly style="background:#eee;"></div>
+        <div>紀錄日期: <input type="text" class="date" id="recordDate" placeholder=" "></div>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="main-table">
+            <tr>
+                <td colspan="2" class="checkbox-cell"><span class="checkbox-icon">✂️</span><input type="checkbox" id="cb1"> 美勞區</td>
+                <td colspan="2" class="checkbox-cell"><span class="checkbox-icon">📚</span><input type="checkbox" id="cb2"> 語文區</td>
+                <td colspan="2" class="checkbox-cell"><span class="checkbox-icon">🧱</span><input type="checkbox" id="cb3"> 積木區</td>
+            </tr>
+            <tr>
+                <td colspan="2" class="checkbox-cell"><span class="checkbox-icon">🧩</span><input type="checkbox" id="cb4"> 益智區</td>
+                <td colspan="2" class="checkbox-cell"><span class="checkbox-icon">👟</span><input type="checkbox" id="cb5"> 生活自理區</td>
+                <td colspan="2" class="checkbox-cell"><span class="checkbox-icon">🏗️</span><input type="checkbox" id="cb6"> 組合建構區</td>
+            </tr>
+            
+            <tr>
+                <td colspan="3" style="padding: 0;">
+                    <div class="photo-cell">
+                        <label for="file1" class="photo-area"><img id="img1"><div class="photo-placeholder" id="ph1">輕觸上傳相片 (區1)</div></label>
+                        <button class="delete-btn no-print" id="del1" onclick="removeImage(1, event)" title="刪除">✖</button>
+                        <input type="file" id="file1" style="display:none;" accept="image/*" onchange="processImage(event, 1)">
+                        <div class="text-area">
+                            <div class="inline-field"><span class="text-label">▶紀錄日期：</span><input type="text" id="pd1"></div>
+                            <div class="block-field"><span class="text-label">▶照片說明：</span><input type="text" id="pdesc1"></div>
+                            <div class="ability-box"><span class="text-label">★重點能力：</span><input type="text" id="pab1"></div>
+                        </div>
+                    </div>
+                </td>
+                <td colspan="3" style="padding: 0;">
+                    <div class="photo-cell">
+                        <label for="file2" class="photo-area"><img id="img2"><div class="photo-placeholder" id="ph2">輕觸上傳相片 (區2)</div></label>
+                        <button class="delete-btn no-print" id="del2" onclick="removeImage(2, event)" title="刪除">✖</button>
+                        <input type="file" id="file2" style="display:none;" accept="image/*" onchange="processImage(event, 2)">
+                        <div class="text-area">
+                            <div class="inline-field"><span class="text-label">▶紀錄日期：</span><input type="text" id="pd2"></div>
+                            <div class="block-field"><span class="text-label">▶照片說明：</span><input type="text" id="pdesc2"></div>
+                            <div class="ability-box"><span class="text-label">★重點能力：</span><input type="text" id="pab2"></div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+     
+            <tr>
+                <td colspan="3" style="padding: 0;">
+                    <div class="photo-cell">
+                        <label for="file3" class="photo-area"><img id="img3"><div class="photo-placeholder" id="ph3">輕觸上傳相片 (區3)</div></label>
+                        <button class="delete-btn no-print" id="del3" onclick="removeImage(3, event)" title="刪除">✖</button>
+                        <input type="file" id="file3" style="display:none;" accept="image/*" onchange="processImage(event, 3)">
+                        <div class="text-area">
+                            <div class="inline-field"><span class="text-label">▶紀錄日期：</span><input type="text" id="pd3"></div>
+                            <div class="block-field"><span class="text-label">▶照片說明：</span><input type="text" id="pdesc3"></div>
+                            <div class="ability-box"><span class="text-label">★重點能力：</span><input type="text" id="pab3"></div>
+                        </div>
+                    </div>
+                </td>
+                <td colspan="3" style="padding: 0;">
+                    <div class="photo-cell">
+                        <label for="file4" class="photo-area"><img id="img4"><div class="photo-placeholder" id="ph4">輕觸上傳相片 (區4)</div></label>
+                        <button class="delete-btn no-print" id="del4" onclick="removeImage(4, event)" title="刪除">✖</button>
+                        <input type="file" id="file4" style="display:none;" accept="image/*" onchange="processImage(event, 4)">
+                        <div class="text-area">
+                            <div class="inline-field"><span class="text-label">▶紀錄日期：</span><input type="text" id="pd4"></div>
+                            <div class="block-field"><span class="text-label">▶照片說明：</span><input type="text" id="pdesc4"></div>
+                            <div class="ability-box"><span class="text-label">★重點能力：</span><input type="text" id="pab4"></div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+        
+        <div class="footer-container">
+            <div>班級導師: <input type="text" id="teacherName"></div>
+            <div class="footer-note">《請於隔週一交回存檔，期末發回，謝謝！》</div>
+        </div>
+    </div>
+</div>
+
+<script src="app.js" defer></script>
+</body>
+</html>
