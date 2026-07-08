@@ -1,5 +1,5 @@
-// 這裡的版本號已更新為 v2，會強迫瀏覽器抓取你最新修改的排版！
-const CACHE_NAME = 'learn-record-v2';
+// 版本號升級為 v3，強迫瀏覽器抓取最新的 A4 排版！
+const CACHE_NAME = 'learn-record-v3';
 const urlsToCache = [
   './',
   './index.html',
