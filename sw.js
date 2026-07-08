@@ -1,5 +1,5 @@
-// 版本號升為 v9，確保讀取全新的詞庫複製功能
-const CACHE_NAME = 'learn-record-v9';
+// 版本號升級為 v10，強制讓瀏覽器拋棄舊快取，載入 A4 預覽放大縮小功能
+const CACHE_NAME = 'learn-record-v10';
 const urlsToCache = [
   './',
   './index.html',
