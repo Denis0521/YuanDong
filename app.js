@@ -47,10 +47,10 @@ window.addEventListener('load', () => {
     });
 });
 
-// 觸發 Google 登入
+// 觸發 Google 登入 (已取消 prompt: 'consent'，點擊即順暢登入)
 function handleAuthClick() {
     if (tokenClient) {
-        tokenClient.requestAccessToken({ prompt: 'consent' });
+        tokenClient.requestAccessToken();
     } else {
         alert('Google SDK 載入中，請重新嘗試。');
     }
