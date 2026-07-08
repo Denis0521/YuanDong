@@ -1,4 +1,4 @@
-// 版本號升為 v7，確保讀取全新的四個欄位黃金比例設定
+// 版本號升為 v8，確保讀取全新的四個欄位黃金比例設定
 const CACHE_NAME = 'learn-record-v7';
 const urlsToCache = [
   './',
