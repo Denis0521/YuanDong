@@ -41,7 +41,8 @@ self.addEventListener('fetch', event => {
     fetch(event.request)
       .then(networkResponse => {
         return caches.open(CACHE_NAME).then(cache => {
-          cache.put(event.request, networkResponse.clone());
+          // 優化：添加 catch 防止跨域 opaque response 導致未處理的 rejection
+          cache.put(event.request, networkResponse.clone()).catch(() => {});
           return networkResponse;
         });
       })
