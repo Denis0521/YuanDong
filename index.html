@@ -13,111 +13,541 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="學習區紀錄">
 <link rel="apple-touch-icon" href="icon-192.png">
-<!-- 優化：移除無效的 defer，async 已足夠 -->
 <script src="https://accounts.google.com/gsi/client" async></script>
 
 <style>
     /* ==================================================== */
-    /* 0. CSS 變數宣告 (優化)                                 */
+    /* 0. 莫蘭迪柔和色調系統                                   */
     /* ==================================================== */
     :root {
-        --primary-blue: #1a73e8;
-        --btn-auth: rgba(66, 133, 244, 0.25);
-        --btn-save: rgba(52, 168, 83, 0.25);
-        --btn-load: rgba(251, 188, 5, 0.25);
-        --btn-print: rgba(234, 67, 53, 0.25);
-        --btn-clear: rgba(155, 89, 182, 0.25);
-        --btn-info: rgba(0, 188, 212, 0.25);
-        --btn-dict: rgba(255, 152, 0, 0.25);
-        --bg-gray: #e8eaed;
-        --border-color: #000;
+        --primary: #6B7B8E;           /* 主色：柔和藍灰 */
+        --primary-light: #8FA1B3;     /* 淺藍灰 */
+        --primary-dark: #4A5568;      /* 深藍灰 */
+        --accent: #B8A99A;            /* 點綴：柔和駝色 */
+        --accent-light: #D4C8BC;      /* 淺駝色 */
+        
+        --bg-body: #F0EDE8;           /* 暖灰白背景 */
+        --bg-card: #FFFFFF;           /* 卡片白 */
+        --bg-input: #F8F7F5;          /* 輸入框背景 */
+        --bg-hover: #F5F3F0;          /* 懸停背景 */
+        --bg-warm: #FAF9F7;           /* 極淺暖色 */
+        
+        --text-primary: #2D3748;      /* 主文字：深灰 */
+        --text-secondary: #718096;    /* 次要文字：中灰 */
+        --text-muted: #A0AEC0;        /* 輔助文字：淺灰 */
+        
+        --border: #E2E0DC;            /* 邊框 */
+        --border-light: #EEEDEA;      /* 淺邊框 */
+        --border-input: #DDDAD5;      /* 輸入框邊框 */
+        
+        --shadow-soft: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
+        --shadow-medium: 0 4px 16px rgba(0,0,0,0.06);
+        --shadow-heavy: 0 8px 24px rgba(0,0,0,0.08);
+        
+        --radius-sm: 6px;
+        --radius-md: 10px;
+        --radius-lg: 14px;
+        --radius-xl: 20px;
     }
 
     /* ==================================================== */
-    /* 1. 電腦版與預設版面 (A4 完美比例)                    */
+    /* 1. 電腦版與預設版面 (A4 完美比例)                      */
     /* ==================================================== */
-    body { background-color: var(--bg-gray); font-family: "標楷體", BiauKai, "Microsoft JhengHei", sans-serif; margin: 0; padding: 0; padding-top: 160px; display: flex; justify-content: center; }
+    body { 
+        background-color: var(--bg-body); 
+        font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif; 
+        margin: 0; 
+        padding: 0; 
+        padding-top: 150px; 
+        display: flex; 
+        justify-content: center;
+        color: var(--text-primary);
+        -webkit-font-smoothing: antialiased;
+    }
     
-    .top-bar { position: fixed; top: 0; left: 0; right: 0; background: linear-gradient(135deg, var(--primary-blue) 0%, #0d47a1 100%); color: white; padding: 12px; display: flex; justify-content: center; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+    /* 頂部工具列：柔和純色，更專業 */
+    .top-bar { 
+        position: fixed; 
+        top: 0; 
+        left: 0; 
+        right: 0; 
+        background: var(--primary); 
+        color: white; 
+        padding: 14px 16px; 
+        display: flex; 
+        justify-content: center; 
+        z-index: 1000; 
+        box-shadow: var(--shadow-medium);
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
     
-    .top-bar-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; width: 100%; max-width: 700px; margin: 0 auto; }
+    .top-bar-row { 
+        display: grid; 
+        grid-template-columns: repeat(6, 1fr); 
+        gap: 10px; 
+        width: 100%; 
+        max-width: 720px; 
+        margin: 0 auto; 
+    }
     
     .btn-half { grid-column: span 3; }
     .btn-third { grid-column: span 2; }
 
-    .seat-control { display: inline-flex; align-items: center; justify-content: center; width: 100%; height: 34px; background-color: rgba(255, 255, 255, 0.15); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.4); box-shadow: 0 4px 6px rgba(0,0,0,0.15), inset 0 10px 20px rgba(255,255,255,0.25); border-radius: 20px; color: #fff; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); font-weight: bold; font-family: "Microsoft JhengHei", sans-serif; font-size: 14px; box-sizing: border-box; }
-    .seat-input { padding: 2px 4px; font-size: 14px; border-radius: 12px; border: none; width: 45px; text-align: center; font-weight: bold; background: rgba(255,255,255,0.9); color: #333; margin-left: 6px; outline: none; }
-    
-    .btn { width: 100%; height: 34px; padding: 0 4px; border-radius: 20px; background-color: rgba(255, 255, 255, 0.15); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.4); box-shadow: 0 4px 6px rgba(0,0,0,0.15), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -2px 5px rgba(0,0,0,0.1); color: #fff; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); font-size: 14px; font-weight: bold; font-family: "Microsoft JhengHei", sans-serif; cursor: pointer; display: inline-flex; justify-content: center; align-items: center; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); box-sizing: border-box; }
-    .btn:hover { background-color: rgba(255, 255, 255, 0.25); box-shadow: 0 6px 12px rgba(0,0,0,0.2), inset 0 10px 20px rgba(255,255,255,0.35), inset 0 -2px 5px rgba(0,0,0,0.1); transform: translateY(-2px); }
-    .btn:active { transform: scale(0.96) translateY(0); box-shadow: 0 2px 4px rgba(0,0,0,0.1), inset 0 5px 10px rgba(255,255,255,0.1); }
-    
-    @media screen and (max-width: 400px) {
-        .btn { font-size: 13px; letter-spacing: -0.5px; }
-        .seat-control { font-size: 13px; letter-spacing: -0.5px; }
-        .seat-input { width: 35px; }
+    /* 座號控制區 */
+    .seat-control { 
+        display: inline-flex; 
+        align-items: center; 
+        justify-content: center; 
+        width: 100%; 
+        height: 36px; 
+        background-color: rgba(255, 255, 255, 0.08); 
+        border: 1px solid rgba(255, 255, 255, 0.15); 
+        border-radius: var(--radius-md); 
+        color: rgba(255,255,255,0.95); 
+        font-weight: 500; 
+        font-size: 13.5px; 
+        letter-spacing: 0.3px;
+        box-sizing: border-box;
+    }
+    .seat-input { 
+        padding: 3px 6px; 
+        font-size: 14px; 
+        border-radius: var(--radius-sm); 
+        border: none; 
+        width: 48px; 
+        text-align: center; 
+        font-weight: 600; 
+        background: rgba(255,255,255,0.95); 
+        color: var(--text-primary); 
+        margin-left: 8px; 
+        outline: none;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     }
     
-    .btn-auth { background-color: var(--btn-auth); border-color: rgba(66, 133, 244, 0.6); }
-    .btn-save { background-color: var(--btn-save); border-color: rgba(52, 168, 83, 0.6); }
-    .btn-load { background-color: var(--btn-load); border-color: rgba(251, 188, 5, 0.6); }
-    .btn-print { background-color: var(--btn-print); border-color: rgba(234, 67, 53, 0.6); }
-    .btn-clear { background-color: var(--btn-clear); border-color: rgba(155, 89, 182, 0.6); }
-    .btn-info { background-color: var(--btn-info); border-color: rgba(0, 188, 212, 0.6); }
-    .btn-dict { background-color: var(--btn-dict); border-color: rgba(255, 152, 0, 0.6); } 
+    /* 按鈕：更柔和、更精緻，統一低飽和基底 */
+    .btn { 
+        width: 100%; 
+        height: 36px; 
+        padding: 0 8px; 
+        border-radius: var(--radius-md); 
+        background-color: rgba(255, 255, 255, 0.1); 
+        border: 1px solid rgba(255, 255, 255, 0.18); 
+        box-shadow: 0 2px 4px rgba(0,0,0,0.08); 
+        color: #fff; 
+        font-size: 13.5px; 
+        font-weight: 500; 
+        font-family: inherit;
+        cursor: pointer; 
+        display: inline-flex; 
+        justify-content: center; 
+        align-items: center; 
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        letter-spacing: 0.3px;
+        backdrop-filter: blur(4px);
+        box-sizing: border-box;
+    }
+    .btn:hover { 
+        background-color: rgba(255, 255, 255, 0.2); 
+        transform: translateY(-1px); 
+        box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+    }
+    .btn:active { 
+        transform: scale(0.97) translateY(0); 
+        box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    }
+    
+    @media screen and (max-width: 400px) {
+        .btn { font-size: 12.5px; letter-spacing: -0.3px; }
+        .seat-control { font-size: 12.5px; letter-spacing: -0.3px; }
+        .seat-input { width: 40px; }
+    }
+    
+    /* 功能按鈕保留極淡的色調傾向，維持識別性但極度柔和 */
+    .btn-auth { background-color: rgba(107, 123, 142, 0.4); }
+    .btn-save { background-color: rgba(120, 150, 120, 0.35); }
+    .btn-load { background-color: rgba(180, 160, 120, 0.35); }
+    .btn-print { background-color: rgba(160, 120, 120, 0.35); }
+    .btn-clear { background-color: rgba(140, 120, 150, 0.35); }
+    .btn-info { background-color: rgba(120, 150, 160, 0.35); }
+    .btn-dict { background-color: rgba(180, 150, 120, 0.35); } 
 
-    .a4-page { width: 210mm; height: 297mm; background: white; box-shadow: 0 5px 15px rgba(0,0,0,0.3); padding: 10mm 15mm 10mm 15mm; box-sizing: border-box; position: relative; margin-bottom: 30px; overflow: hidden; }
+    /* A4 頁面：更柔和的陰影與細節 */
+    .a4-page { 
+        width: 210mm; 
+        height: 297mm; 
+        background: var(--bg-card); 
+        box-shadow: var(--shadow-heavy); 
+        padding: 12mm 16mm 10mm 16mm; 
+        box-sizing: border-box; 
+        position: relative; 
+        margin-bottom: 30px; 
+        overflow: hidden;
+        border-radius: 2px;
+    }
     
-    h1 { text-align: center; font-size: 19px; margin: 0 0 8px 0; font-weight: bold; letter-spacing: 0.5px; }
-    .title-input { font-size: 19px; font-family: inherit; border: none; text-align: center; outline: none; font-weight: bold; background: rgba(0,0,0,0.04); border-radius: 4px; }
-    .title-input.year { width: 50px; } .title-input.term { width: 30px; }
+    /* 標題：更優雅 */
+    h1 { 
+        text-align: center; 
+        font-size: 20px; 
+        margin: 0 0 12px 0; 
+        font-weight: 600; 
+        letter-spacing: 1px; 
+        color: var(--text-primary);
+    }
+    .title-input { 
+        font-size: 20px; 
+        font-family: inherit; 
+        border: none; 
+        text-align: center; 
+        outline: none; 
+        font-weight: 600; 
+        background: rgba(107,123,142,0.06); 
+        border-radius: var(--radius-sm);
+        color: var(--text-primary);
+        padding: 2px 6px;
+        transition: background 0.2s;
+    }
+    .title-input:focus { background: rgba(107,123,142,0.1); }
+    .title-input.year { width: 56px; } 
+    .title-input.term { width: 36px; }
     
-    .header-info { display: flex; justify-content: space-between; align-items: center; font-size: 16px; margin-bottom: 10px; width: 100%; }
-    .header-col { display: flex; align-items: center; white-space: nowrap; }
-    .header-col input, .header-col select { font-size: 16px; font-family: inherit; border: none; outline: none; background: rgba(0,0,0,0.05); border-radius: 4px; padding: 4px 6px; margin-left: 6px; text-align: center; color: #000; }
-    .class-col select { width: 75px; } .name-col input { width: 100px; } .seat-col input { width: 45px; } .date-col input { width: 150px; text-align: left; padding-left: 8px;} 
+    /* 頭部資訊：統一標籤樣式 */
+    .header-info { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        font-size: 15px; 
+        margin-bottom: 14px; 
+        width: 100%;
+        gap: 10px;
+    }
+    .header-col { 
+        display: flex; 
+        align-items: center; 
+        white-space: nowrap; 
+        color: var(--text-secondary);
+        font-size: 13.5px;
+        font-weight: 500;
+    }
+    .header-col input, .header-col select { 
+        font-size: 15px; 
+        font-family: inherit; 
+        border: 1px solid var(--border-input); 
+        outline: none; 
+        background: var(--bg-input); 
+        border-radius: var(--radius-sm); 
+        padding: 5px 8px; 
+        margin-left: 6px; 
+        text-align: center; 
+        color: var(--text-primary);
+        transition: all 0.2s;
+        font-weight: 500;
+    }
+    .header-col input:focus, .header-col select:focus {
+        border-color: var(--primary-light);
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(107,123,142,0.08);
+    }
+    .class-col select { 
+        width: 80px; 
+        appearance: none; 
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23718096' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); 
+        background-repeat: no-repeat; 
+        background-position: right 6px center; 
+        padding-right: 20px; 
+    } 
+    .name-col input { width: 110px; } 
+    .seat-col input { width: 50px; background: var(--bg-warm) !important; font-weight: 600; } 
+    .date-col input { width: 160px; text-align: left; padding-left: 10px;} 
 
     .table-wrapper { width: 100%; }
-    table.main-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border-color); table-layout: fixed; }
-    table.main-table td { border: 1px solid var(--border-color); padding: 0; vertical-align: top; } 
+    table.main-table { 
+        width: 100%; 
+        border-collapse: separate; 
+        border-spacing: 0;
+        border: 1px solid var(--border); 
+        table-layout: fixed; 
+        border-radius: var(--radius-md);
+        overflow: hidden;
+    }
+    table.main-table td { 
+        border: 1px solid var(--border); 
+        padding: 0; 
+        vertical-align: top; 
+    } 
     
-    .checkbox-cell { padding: 4px 10px !important; text-align: left; font-size: 16px; vertical-align: middle !important; height: 38px; }
-    .checkbox-cell input[type="checkbox"] { transform: scale(1.2); margin-right: 4px; vertical-align: middle; cursor: pointer; }
-    .checkbox-icon { font-size: 16px; margin-right: 3px; vertical-align: middle; }
+    /* 學習區選項：更柔和、更直覺 */
+    .checkbox-cell { 
+        padding: 8px 12px !important; 
+        text-align: left; 
+        font-size: 15px; 
+        vertical-align: middle !important; 
+        height: 44px; 
+        background: var(--bg-warm);
+        transition: all 0.2s;
+        cursor: pointer;
+        user-select: none;
+    }
+    .checkbox-cell:hover {
+        background: var(--bg-hover);
+    }
+    .checkbox-cell input[type="checkbox"] { 
+        transform: scale(1.3); 
+        margin-right: 8px; 
+        vertical-align: middle; 
+        cursor: pointer;
+        accent-color: var(--primary);
+    }
+    .checkbox-icon { 
+        font-size: 18px; 
+        margin-right: 6px; 
+        vertical-align: middle; 
+        opacity: 0.85;
+    }
 
-    .photo-cell { display: flex; flex-direction: column; height: 410px; box-sizing: border-box; position: relative; }
-    .photo-area { height: 250px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--border-color); cursor: pointer; overflow: hidden; position: relative; background-color: #f9f9f9; -webkit-tap-highlight-color: transparent; }
-    .photo-area:active { background-color: #e0e0e0; }
-    .photo-area img { width: 100%; height: 100%; object-fit: contain; display: none; }
-    .photo-placeholder { color: #888; font-size: 12px; text-align: center; padding: 2px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; pointer-events: none; }
-    .delete-btn { position: absolute; top: 4px; right: 4px; background-color: rgba(244, 67, 54, 0.85); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; line-height: 22px; text-align: center; cursor: pointer; z-index: 10; display: none; }
+    /* 照片區域：現代化上傳體驗 */
+    .photo-cell { 
+        display: flex; 
+        flex-direction: column; 
+        height: 410px; 
+        box-sizing: border-box; 
+        position: relative; 
+    }
+    .photo-area { 
+        height: 250px; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        border-bottom: 1px solid var(--border); 
+        cursor: pointer; 
+        overflow: hidden; 
+        position: relative; 
+        background-color: var(--bg-warm);
+        transition: all 0.25s;
+    }
+    .photo-area:hover { 
+        background-color: #F0EDE8;
+    }
+    .photo-area img { 
+        width: 100%; 
+        height: 100%; 
+        object-fit: contain; 
+        display: none; 
+    }
+    /* 上傳提示：更直覺，CSS 偽元素加入相機圖示，不影響 JS innerText */
+    .photo-placeholder { 
+        color: var(--text-muted); 
+        font-size: 13px; 
+        text-align: center; 
+        padding: 8px; 
+        position: absolute; 
+        top: 50%; 
+        left: 50%; 
+        transform: translate(-50%, -50%); 
+        width: 100%; 
+        pointer-events: none;
+        line-height: 1.5;
+    }
+    .photo-placeholder::before {
+        content: "📷";
+        display: block;
+        font-size: 32px;
+        opacity: 0.35;
+        margin-bottom: 8px;
+    }
     
-    .text-area { padding: 6px 8px; font-size: 15px; display: flex; flex-direction: column; justify-content: space-between; height: 160px; box-sizing: border-box; }
-    .tf-row { display: flex; align-items: center; width: 100%; }
-    .tf-row input { flex-grow: 1; font-size: 15px; font-family: inherit; border: none; outline: none; background: rgba(0,0,0,0.04); border-radius: 4px; padding: 2px 6px; min-height: 24px; }
-    .top-line { border-top: 1px solid var(--border-color); padding-top: 6px; margin-top: 4px; }
-    .text-label { font-weight: normal; flex-shrink: 0; font-size: 15px; }
+    /* 刪除按鈕：更精緻 */
+    .delete-btn { 
+        position: absolute; 
+        top: 8px; 
+        right: 8px; 
+        background-color: rgba(200, 90, 80, 0.9); 
+        color: white; 
+        border: none; 
+        border-radius: 50%; 
+        width: 26px; 
+        height: 26px; 
+        font-size: 13px; 
+        line-height: 26px; 
+        text-align: center; 
+        cursor: pointer; 
+        z-index: 10; 
+        display: none;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        transition: transform 0.2s, background 0.2s;
+    }
+    .delete-btn:hover {
+        transform: scale(1.1);
+        background-color: rgba(180, 70, 60, 0.95);
+    }
     
-    .footer-container { display: flex; justify-content: space-between; align-items: center; font-size: 15px; padding: 8px 4px 0 4px; }
-    .footer-container input { font-size: 15px; font-family: inherit; border: none; outline: none; width: 100px; text-align: center; background: rgba(0,0,0,0.04); border-radius: 4px; padding: 2px 4px;}
-    .footer-note { font-weight: bold; font-size: 14px; }
+    /* 文字區域：更優雅的表單 */
+    .text-area { 
+        padding: 10px 12px; 
+        font-size: 14px; 
+        display: flex; 
+        flex-direction: column; 
+        justify-content: space-between; 
+        height: 160px; 
+        box-sizing: border-box;
+        background: #fff;
+    } 
+    .tf-row { 
+        display: flex; 
+        align-items: center; 
+        width: 100%; 
+        margin-bottom: 4px;
+    } 
+    .tf-row input { 
+        flex-grow: 1; 
+        font-size: 14px; 
+        font-family: inherit; 
+        border: 1px solid var(--border-input); 
+        outline: none; 
+        background: var(--bg-input); 
+        border-radius: var(--radius-sm); 
+        padding: 5px 8px; 
+        min-height: 28px;
+        color: var(--text-primary);
+        transition: all 0.2s;
+    }
+    .tf-row input:focus {
+        border-color: var(--primary-light);
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(107,123,142,0.06);
+    }
+    .top-line { 
+        border-top: 1px solid var(--border-light); 
+        padding-top: 8px; 
+        margin-top: 6px; 
+    } 
+    .text-label { 
+        font-weight: 500; 
+        flex-shrink: 0; 
+        font-size: 13px; 
+        color: var(--text-secondary);
+        margin-right: 6px;
+        letter-spacing: 0.3px;
+    }
+    
+    /* 底部 */
+    .footer-container { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        font-size: 14px; 
+        padding: 12px 4px 0 4px; 
+        color: var(--text-secondary);
+    }
+    .footer-container input { 
+        font-size: 15px; 
+        font-family: inherit; 
+        border: 1px solid var(--border-input); 
+        outline: none; 
+        width: 120px; 
+        text-align: center; 
+        background: var(--bg-input); 
+        border-radius: var(--radius-sm); 
+        padding: 5px 8px;
+        color: var(--text-primary);
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    .footer-container input:focus {
+        border-color: var(--primary-light);
+        background: #fff;
+    }
+    .footer-note { 
+        font-weight: 600; 
+        font-size: 13px; 
+        color: var(--accent);
+        letter-spacing: 0.5px;
+    }
 
-    .loader-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 3000; justify-content: center; align-items: center; flex-direction: column; color: white; font-family: "Microsoft JhengHei", sans-serif; font-size: 16px; text-align: center;}
-    .spinner { border: 5px solid #f3f3f3; border-top: 5px solid #34a853; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+    /* Loader：更柔和 */
+    .loader-overlay { 
+        position: fixed; 
+        top: 0; 
+        left: 0; 
+        width: 100%; 
+        height: 100%; 
+        background: rgba(45, 55, 72, 0.88); 
+        display: none; 
+        z-index: 3000; 
+        justify-content: center; 
+        align-items: center; 
+        flex-direction: column; 
+        color: white; 
+        font-family: inherit;
+        font-size: 16px; 
+        text-align: center;
+        backdrop-filter: blur(4px);
+    }
+    .spinner { 
+        border: 4px solid rgba(255,255,255,0.1); 
+        border-top: 4px solid var(--accent-light); 
+        border-radius: 50%; 
+        width: 42px; 
+        height: 42px; 
+        animation: spin 0.9s linear infinite; 
+        margin-bottom: 16px; 
+    }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     /* ==================================================== */
-    /* 2. 手機螢幕友善介面 (重構：學習區自動轉為左3右3)           */
+    /* 2. 手機螢幕友善介面 (重構：學習區自動轉為左3右3)        */
     /* ==================================================== */
     @media screen and (max-width: 800px) {
-        body { padding-top: 160px; background-color: #f0f2f5; }
-        .a4-page { width: 100%; height: auto; box-shadow: none; padding: 15px; margin-bottom: 0; border-radius: 0; margin-top: 10px; }
-        h1 { font-size: 20px; line-height: 1.5; margin-bottom: 15px; }
-        .title-input { background: #fff; border: 1px solid #ccc !important; }
-        .header-info { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 15px; }
-        .header-col { display: flex; flex-direction: row; align-items: center; }
-        .class-col { width: calc(40% - 6px); } .name-col { width: calc(60% - 6px); } .seat-col { width: calc(32% - 6px); } .date-col { width: calc(68% - 6px); }
-        .header-col input, .header-col select { flex-grow: 1; width: 100%; height: 42px; border: 1px solid #ccc !important; background: #fff; text-align: left; padding: 0 10px; font-size: 16px;}
+        body { 
+            padding-top: 150px; 
+            background-color: var(--bg-body); 
+        }
+        .a4-page { 
+            width: 100%; 
+            height: auto; 
+            box-shadow: none; 
+            padding: 20px 16px; 
+            margin-bottom: 0; 
+            border-radius: 0; 
+            margin-top: 0;
+            border: none;
+        }
+        h1 { 
+            font-size: 20px; 
+            line-height: 1.5; 
+            margin-bottom: 18px; 
+            letter-spacing: 0.5px;
+        }
+        .title-input { 
+            background: var(--bg-input); 
+            border: 1px solid var(--border-input) !important; 
+        }
+        .header-info { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 10px; 
+            margin-bottom: 20px; 
+        }
+        .header-col { 
+            display: flex; 
+            flex-direction: row; 
+            align-items: center; 
+        }
+        .class-col { width: calc(40% - 5px); } 
+        .name-col { width: calc(60% - 5px); } 
+        .seat-col { width: calc(32% - 5px); } 
+        .date-col { width: calc(68% - 5px); }
+        .header-col input, .header-col select { 
+            flex-grow: 1; 
+            width: 100%; 
+            height: 44px; 
+            border: 1px solid var(--border-input) !important; 
+            background: #fff; 
+            text-align: left; 
+            padding: 0 12px; 
+            font-size: 16px;
+            border-radius: var(--radius-md);
+        }
         
         /* 核心修改：利用 display: contents 讓 td 忽略 tr 的限制，直接排成 2欄x3列 */
         table.main-table { display: block; width: 100%; border: none; }
@@ -126,60 +556,285 @@
         table.main-table td { display: block; border: none; box-sizing: border-box; }
         
         /* 每個選項佔 50%，剛好變成左3右3 */
-        .checkbox-cell { width: 50%; flex: 0 0 50%; height: 50px; display: flex; align-items: center; justify-content: flex-start; padding-left: 15px !important; border-bottom: 1px solid #eee; background: #fff; }
-        .checkbox-cell input[type="checkbox"] { transform: scale(1.5); margin-right: 10px; }
+        .checkbox-cell { 
+            width: 50%; 
+            flex: 0 0 50%; 
+            height: 54px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: flex-start; 
+            padding-left: 16px !important; 
+            border-bottom: 1px solid var(--border-light); 
+            background: #fff;
+            font-size: 16px;
+        }
+        .checkbox-cell input[type="checkbox"] { 
+            transform: scale(1.4); 
+            margin-right: 12px; 
+        }
+        .checkbox-icon { font-size: 20px; }
         
         /* 相片區塊佔 100%，自動往下排列 */
-        td.photo-wrapper-td { width: 100%; flex: 0 0 100%; margin-top: 20px; border: 2px solid var(--primary-blue) !important; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); background: #fff; }
+        td.photo-wrapper-td { 
+            width: 100%; 
+            flex: 0 0 100%; 
+            margin-top: 16px; 
+            border: 1px solid var(--border) !important; 
+            border-radius: var(--radius-lg); 
+            overflow: hidden; 
+            box-shadow: var(--shadow-soft); 
+            background: #fff;
+        }
         
         .photo-cell { height: auto; }
-        .photo-area { height: 280px; background-color: #f8f9fa; border-bottom: 2px solid var(--primary-blue); }
-        .text-area { height: auto; padding: 15px; gap: 12px; }
-        .tf-row { flex-direction: column; align-items: flex-start; width: 100%; }
-        .tf-row.inline-mobile { flex-direction: row; align-items: center; } 
-        .tf-row.inline-mobile input[type="text"] { width: auto; flex-grow: 1; margin-left: 10px; margin-top: 0; }
-        .text-label { font-size: 15px; color: var(--primary-blue); font-weight: bold; margin-bottom: 4px; }
-        .tf-row input[type="text"] { border: 1px solid #ccc !important; height: 45px; font-size: 16px !important; border-radius: 6px; padding: 0 12px !important; background: #fff; width: 100%; box-sizing: border-box; margin-top: 4px; }
-        .top-line { border: none; padding: 0; margin-top: 10px; }
-        .footer-container { display: flex; flex-direction: row; flex-wrap: wrap; justify-content: space-between; align-items: center; padding-top: 25px; gap: 15px; }
-        .footer-container div { width: 100%; display: flex; flex-direction: row; align-items: center; }
-        .footer-container input { flex-grow: 1; height: 45px; font-size: 16px; border: 1px solid #ccc !important; border-radius: 6px; text-align: left; padding: 0 12px; margin-left: 10px; background: #fff;}
+        .photo-area { 
+            height: 300px; 
+            background-color: var(--bg-warm); 
+            border-bottom: 1px solid var(--border); 
+        }
+        .text-area { 
+            height: auto; 
+            padding: 16px; 
+            gap: 10px; 
+        }
+        .tf-row { 
+            flex-direction: column; 
+            align-items: flex-start; 
+            width: 100%; 
+            margin-bottom: 2px;
+        }
+        .tf-row.inline-mobile { 
+            flex-direction: row; 
+            align-items: center; 
+        } 
+        .tf-row.inline-mobile input[type="text"] { 
+            width: auto; 
+            flex-grow: 1; 
+            margin-left: 10px; 
+            margin-top: 0; 
+        }
+        .text-label { 
+            font-size: 13px; 
+            color: var(--primary); 
+            font-weight: 600; 
+            margin-bottom: 4px; 
+            letter-spacing: 0.5px;
+        }
+        .tf-row input[type="text"] { 
+            border: 1px solid var(--border-input) !important; 
+            height: 44px; 
+            font-size: 16px !important; 
+            border-radius: var(--radius-md); 
+            padding: 0 12px !important; 
+            background: var(--bg-input); 
+            width: 100%; 
+            box-sizing: border-box; 
+            margin-top: 2px; 
+        }
+        .top-line { 
+            border: none; 
+            padding: 0; 
+            margin-top: 8px; 
+        }
+        .footer-container { 
+            display: flex; 
+            flex-direction: row; 
+            flex-wrap: wrap; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding-top: 24px; 
+            gap: 12px; 
+        }
+        .footer-container div { 
+            width: 100%; 
+            display: flex; 
+            flex-direction: row; 
+            align-items: center; 
+        }
+        .footer-container input { 
+            flex-grow: 1; 
+            height: 44px; 
+            font-size: 16px; 
+            border: 1px solid var(--border-input) !important; 
+            border-radius: var(--radius-md); 
+            text-align: left; 
+            padding: 0 12px; 
+            margin-left: 10px; 
+            background: #fff;
+        }
+        .footer-note {
+            text-align: center;
+            width: 100% !important;
+            justify-content: center !important;
+            margin-top: 4px;
+        }
     }
 
     /* ==================================================== */
-    /* 3. 列印與 PDF 輸出專用 (固定為上3下3)                    */
+    /* 3. 列印與 PDF 輸出專用 (固定為上3下3，標準黑白格式)      */
     /* ==================================================== */
     @media print {
         @page { margin: 0; size: A4 portrait; }
-        body { background-color: white; padding: 0; margin: 0; display: block; }
+        body { 
+            background-color: white; 
+            padding: 0; 
+            margin: 0; 
+            display: block; 
+            color: #000;
+        }
         .top-bar, .delete-btn { display: none !important; }
         .table-wrapper { overflow-x: visible; }
-        .a4-page { box-shadow: none !important; margin: 0 auto !important; padding: 10mm 15mm 10mm 15mm !important; width: 210mm !important; height: 296mm !important; overflow: hidden !important; page-break-after: always !important; display: block !important; border-radius: 0 !important; }
-        .header-info { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; justify-content: space-between !important; width: 100% !important; margin-bottom: 6px !important;}
-        .header-col { width: auto !important; display: flex !important; flex-direction: row !important; align-items: center !important; }
-        .header-col input, .header-col select { margin-left: 4px !important; margin-top: 0 !important; font-size: 16px !important; height: auto !important; border: none !important; border-radius: 0 !important; padding: 0 !important; text-align: center !important; background: transparent !important; }
-        .class-col select { width: 75px !important; } .name-col input { width: 100px !important; } .seat-col input { width: 45px !important; } .date-col input { width: 150px !important; text-align: left !important; }
-        .title-input { background: transparent !important; border: none !important; }
+        .a4-page { 
+            box-shadow: none !important; 
+            margin: 0 auto !important; 
+            padding: 10mm 15mm 10mm 15mm !important; 
+            width: 210mm !important; 
+            height: 296mm !important; 
+            overflow: hidden !important; 
+            page-break-after: always !important; 
+            display: block !important; 
+            border-radius: 0 !important;
+            background: #fff !important;
+        }
+        .header-info { 
+            display: flex !important; 
+            flex-direction: row !important; 
+            flex-wrap: nowrap !important; 
+            justify-content: space-between !important; 
+            width: 100% !important; 
+            margin-bottom: 8px !important;
+        }
+        .header-col { 
+            width: auto !important; 
+            display: flex !important; 
+            flex-direction: row !important; 
+            align-items: center !important; 
+            color: #000 !important;
+        }
+        .header-col input, .header-col select { 
+            margin-left: 4px !important; 
+            margin-top: 0 !important; 
+            font-size: 16px !important; 
+            height: auto !important; 
+            border: none !important; 
+            border-radius: 0 !important; 
+            padding: 0 !important; 
+            text-align: center !important; 
+            background: transparent !important; 
+            color: #000 !important;
+            box-shadow: none !important;
+        }
+        .class-col select { width: 75px !important; appearance: none; } 
+        .name-col input { width: 100px !important; } 
+        .seat-col input { width: 45px !important; } 
+        .date-col input { width: 150px !important; text-align: left !important; }
+        .title-input { 
+            background: transparent !important; 
+            border: none !important; 
+            color: #000 !important;
+            box-shadow: none !important;
+        }
         
-        /* 鎖定表格結構，維持 3欄x2列 */
-        table.main-table { display: table !important; width: 100% !important; border-collapse: collapse !important; border: 1px solid var(--border-color) !important; }
+        /* 鎖定表格結構，維持 3欄x2列，標準黑色邊框 */
+        table.main-table { 
+            display: table !important; 
+            width: 100% !important; 
+            border-collapse: collapse !important; 
+            border: 1px solid #000 !important; 
+        }
         table.main-table tbody { display: table-row-group !important; }
         table.main-table tr { display: table-row !important; flex-wrap: nowrap !important; width: auto !important; }
-        table.main-table td { display: table-cell !important; border: 1px solid var(--border-color) !important; }
-        .checkbox-cell { width: auto !important; height: 38px !important; display: table-cell !important; padding: 4px 10px !important; }
-        .checkbox-cell input[type="checkbox"] { transform: scale(1.2) !important; }
-        td.photo-wrapper-td { display: table-cell !important; width: 50% !important; margin-top: 0 !important; border: 1px solid var(--border-color) !important; border-radius: 0 !important; box-shadow: none !important; padding: 0 !important; }
+        table.main-table td { 
+            display: table-cell !important; 
+            border: 1px solid #000 !important; 
+        }
+        .checkbox-cell { 
+            width: auto !important; 
+            height: 38px !important; 
+            display: table-cell !important; 
+            padding: 4px 10px !important; 
+            background: #fff !important;
+            color: #000 !important;
+        }
+        .checkbox-cell input[type="checkbox"] { 
+            transform: scale(1.2) !important; 
+            accent-color: auto !important;
+        }
+        td.photo-wrapper-td { 
+            display: table-cell !important; 
+            width: 50% !important; 
+            margin-top: 0 !important; 
+            border: 1px solid #000 !important; 
+            border-radius: 0 !important; 
+            box-shadow: none !important; 
+            padding: 0 !important; 
+        }
         
         .photo-cell { height: 410px !important; }
-        .photo-area { height: 250px !important; background-color: transparent !important; border-bottom: 1px solid var(--border-color) !important; }
-        .text-area { height: 160px !important; padding: 6px 8px !important; background-color: transparent !important; gap: 0 !important; }
-        .tf-row { flex-direction: row !important; align-items: center !important; }
-        .text-label { font-size: 15px !important; color: #000 !important; font-weight: normal !important; margin-bottom: 0 !important; }
-        .tf-row input[type="text"] { border: none !important; height: auto !important; font-size: 15px !important; border-radius: 0 !important; margin-top: 0 !important; padding: 0 6px !important; background: transparent !important; }
-        .top-line { border-top: 1px solid var(--border-color) !important; padding-top: 6px !important; margin-top: 4px !important; }
-        .footer-container { display: flex !important; flex-direction: row !important; align-items: center !important; padding-top: 8px !important; gap: 0 !important;}
-        .footer-container div { width: auto !important; display: block !important; }
-        .footer-container input { width: 100px !important; height: auto !important; font-size: 15px !important; border: none !important; text-align: center !important; padding: 0 !important; margin-top: 0 !important; margin-left:0 !important; background: transparent !important; }
+        .photo-area { 
+            height: 250px !important; 
+            background-color: transparent !important; 
+            border-bottom: 1px solid #000 !important; 
+        }
+        .text-area { 
+            height: 160px !important; 
+            padding: 6px 8px !important; 
+            background-color: transparent !important; 
+            gap: 0 !important; 
+        }
+        .tf-row { 
+            flex-direction: row !important; 
+            align-items: center !important; 
+            margin-bottom: 0 !important;
+        }
+        .text-label { 
+            font-size: 15px !important; 
+            color: #000 !important; 
+            font-weight: normal !important; 
+            margin-bottom: 0 !important; 
+        }
+        .tf-row input[type="text"] { 
+            border: none !important; 
+            height: auto !important; 
+            font-size: 15px !important; 
+            border-radius: 0 !important; 
+            margin-top: 0 !important; 
+            padding: 0 6px !important; 
+            background: transparent !important; 
+            box-shadow: none !important;
+            color: #000 !important;
+        }
+        .top-line { 
+            border-top: 1px solid #000 !important; 
+            padding-top: 6px !important; 
+            margin-top: 4px !important; 
+        }
+        .footer-container { 
+            display: flex !important; 
+            flex-direction: row !important; 
+            align-items: center !important; 
+            padding-top: 8px !important; 
+            gap: 0 !important;
+            color: #000 !important;
+        }
+        .footer-container div { 
+            width: auto !important; 
+            display: block !important; 
+        }
+        .footer-container input { 
+            width: 100px !important; 
+            height: auto !important; 
+            font-size: 15px !important; 
+            border: none !important; 
+            text-align: center !important; 
+            padding: 0 !important; 
+            margin-top: 0 !important; 
+            margin-left:0 !important; 
+            background: transparent !important; 
+            box-shadow: none !important;
+            color: #000 !important;
+        }
+        .footer-note { color: #000 !important; }
         .header-info select { appearance: none; -webkit-appearance: none; }
         .photo-placeholder { display: none !important; }
     }
@@ -187,23 +842,170 @@
     /* ==================================================== */
     /* 4. 彈出視窗共用樣式 (說明與詞庫)                        */
     /* ==================================================== */
-    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 4000; display: none; justify-content: center; align-items: center; padding: 20px; }
-    .modal-content { background: #fff; width: 100%; max-width: 600px; border-radius: 8px; padding: 25px; max-height: 85vh; overflow-y: auto; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-family: "Microsoft JhengHei", sans-serif; }
-    .modal-close { position: absolute; top: 15px; right: 15px; cursor: pointer; font-size: 24px; border: none; background: transparent; color: #888; }
-    .modal-title { font-size: 21px; font-weight: bold; margin-top: 0; margin-bottom: 15px; color: var(--primary-blue); border-bottom: 2px solid #eee; padding-bottom: 10px; text-align: left; }
-    .modal-section { margin-bottom: 20px; font-size: 15px; line-height: 1.6; text-align: left; }
-    .modal-section h3 { font-size: 17px; margin: 0 0 8px 0; color: #333; display: flex; align-items: center; font-weight: bold; }
-    .modal-section ul { margin: 0; padding-left: 22px; color: #555; }
-    .modal-section li { margin-bottom: 6px; }
-    .version-tag { display: inline-block; background: #e8eaed; padding: 3px 10px; border-radius: 12px; font-size: 13px; color: #555; margin-left: 10px; vertical-align: middle; font-weight: normal; }
-    .dict-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; }
+    .modal-overlay { 
+        position: fixed; 
+        top: 0; 
+        left: 0; 
+        right: 0; 
+        bottom: 0; 
+        background: rgba(45, 55, 72, 0.5); 
+        z-index: 4000; 
+        display: none; 
+        justify-content: center; 
+        align-items: center; 
+        padding: 20px; 
+        backdrop-filter: blur(3px);
+    }
+    .modal-content { 
+        background: var(--bg-card); 
+        width: 100%; 
+        max-width: 600px; 
+        border-radius: var(--radius-lg); 
+        padding: 28px; 
+        max-height: 85vh; 
+        overflow-y: auto; 
+        position: relative; 
+        box-shadow: var(--shadow-heavy); 
+        font-family: inherit;
+        border: 1px solid var(--border);
+    }
+    .modal-close { 
+        position: absolute; 
+        top: 16px; 
+        right: 16px; 
+        cursor: pointer; 
+        font-size: 22px; 
+        border: none; 
+        background: var(--bg-hover); 
+        color: var(--text-secondary); 
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+    .modal-close:hover {
+        background: var(--border);
+        color: var(--text-primary);
+    }
+    .modal-title { 
+        font-size: 20px; 
+        font-weight: 600; 
+        margin-top: 0; 
+        margin-bottom: 18px; 
+        color: var(--primary-dark); 
+        border-bottom: 2px solid var(--border-light); 
+        padding-bottom: 12px; 
+        text-align: left; 
+        letter-spacing: 0.5px;
+    }
+    .modal-section { 
+        margin-bottom: 22px; 
+        font-size: 15px; 
+        line-height: 1.7; 
+        text-align: left; 
+        color: var(--text-primary);
+    }
+    .modal-section h3 { 
+        font-size: 16px; 
+        margin: 0 0 10px 0; 
+        color: var(--primary-dark); 
+        display: flex; 
+        align-items: center; 
+        font-weight: 600;
+        letter-spacing: 0.3px;
+    }
+    .modal-section ul { 
+        margin: 0; 
+        padding-left: 22px; 
+        color: var(--text-secondary); 
+    }
+    .modal-section li { 
+        margin-bottom: 8px; 
+    }
+    .version-tag { 
+        display: inline-block; 
+        background: var(--bg-input); 
+        padding: 4px 12px; 
+        border-radius: 20px; 
+        font-size: 13px; 
+        color: var(--text-secondary); 
+        margin-left: 10px; 
+        vertical-align: middle; 
+        font-weight: 500;
+        border: 1px solid var(--border);
+    }
+    .dict-grid { 
+        display: grid; 
+        grid-template-columns: repeat(2, 1fr); 
+        gap: 12px; 
+        margin-top: 20px; 
+    }
     @media screen and (max-width: 500px) { .dict-grid { grid-template-columns: 1fr; } }
-    .dict-grid button { padding: 15px; font-size: 18px; border: 2px solid var(--primary-blue); border-radius: 8px; background: #fff; color: var(--primary-blue); cursor: pointer; font-weight: bold; transition: 0.2s; }
-    .dict-grid button:hover { background: var(--primary-blue); color: #fff; }
-    .phrase-list { display: flex; flex-direction: column; gap: 8px; text-align: left; padding-right: 5px; }
-    .phrase-item { background: #f8f9fa; border: 1px solid #ddd; padding: 12px 15px; border-radius: 6px; cursor: pointer; font-size: 16px; transition: all 0.2s; position: relative; }
-    .phrase-item:hover { background: #e8f0fe; border-color: var(--primary-blue); color: var(--primary-blue); padding-left: 20px; }
-    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 12px 24px; border-radius: 30px; z-index: 5000; font-size: 16px; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.2); pointer-events: none; }
+    .dict-grid button { 
+        padding: 14px; 
+        font-size: 17px; 
+        border: 1.5px solid var(--border); 
+        border-radius: var(--radius-md); 
+        background: var(--bg-card); 
+        color: var(--primary); 
+        cursor: pointer; 
+        font-weight: 600; 
+        transition: all 0.2s;
+        box-shadow: var(--shadow-soft);
+    }
+    .dict-grid button:hover { 
+        background: var(--primary); 
+        color: #fff; 
+        border-color: var(--primary);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-medium);
+    }
+    .phrase-list { 
+        display: flex; 
+        flex-direction: column; 
+        gap: 8px; 
+        text-align: left; 
+        padding-right: 5px; 
+    }
+    .phrase-item { 
+        background: var(--bg-warm); 
+        border: 1px solid var(--border); 
+        padding: 12px 16px; 
+        border-radius: var(--radius-md); 
+        cursor: pointer; 
+        font-size: 15.5px; 
+        transition: all 0.2s; 
+        position: relative; 
+        color: var(--text-primary);
+        line-height: 1.5;
+    }
+    .phrase-item:hover { 
+        background: #F0EDE8; 
+        border-color: var(--primary-light); 
+        color: var(--primary-dark); 
+        padding-left: 20px; 
+        box-shadow: var(--shadow-soft);
+    }
+    .toast { 
+        position: fixed; 
+        bottom: 30px; 
+        left: 50%; 
+        transform: translateX(-50%); 
+        background: rgba(45, 55, 72, 0.92); 
+        color: white; 
+        padding: 12px 28px; 
+        border-radius: 30px; 
+        z-index: 5000; 
+        font-size: 15px; 
+        display: none; 
+        box-shadow: var(--shadow-heavy); 
+        pointer-events: none;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
 </style>
 </head>
 <body>
@@ -329,7 +1131,7 @@
 <div class="modal-overlay" id="infoModal" onclick="closeInfo()">
     <div class="modal-content" onclick="event.stopPropagation()">
         <button class="modal-close" onclick="closeInfo()">✖</button>
-        <h2 class="modal-title">遠東幼兒園學習區紀錄系統 <span class="version-tag">版本：發行版V1.01</span></h2>
+        <h2 class="modal-title">遠東幼兒園學習區紀錄系統 <span class="version-tag">版本：發行版V1.02</span></h2>
         
         <div class="modal-section">
             <h3>⚠️ Google 第一次登入常見問題處理</h3>
@@ -383,6 +1185,6 @@
     </div>
 </div>
 
-<script src="app.js?v=v1.01" defer></script>
+<script src="app.js?v=v1.02" defer></script>
 </body>
 </html>

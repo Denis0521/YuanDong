@@ -3,18 +3,16 @@
 // ==================== 常數與配置 ====================
 const CLIENT_ID = '130737953356-9t11ein5pe6l7ihvmbnm39jeg9beel9s.apps.googleusercontent.com';
 
-/** LocalStorage 鍵名集中管理，避免魔法字串拼寫錯誤 */
+/** LocalStorage 鍵名集中管理 */
 const STORAGE_KEYS = Object.freeze({
     TOKEN: 'g_token',
     EXPIRE: 'g_expire'
 });
 
-/** 圖片壓縮上限尺寸 */
 const MAX_IMAGE_SIZE = 600;
 
 // ============================================================
 
-// 狀態集中管理
 const AppState = {
     tokenClient: null,
     accessToken: null,
@@ -23,16 +21,21 @@ const AppState = {
     cloudImageData: { fileId1: '', fileId2: '', fileId3: '', fileId4: '' }
 };
 
-// DOM 快取工具
 const $ = (id) => document.getElementById(id);
 
-// 優化：使用 DOMContentLoaded 加速啟動，無需等待圖片等其他資源
-document.addEventListener('DOMContentLoaded', () => {
+function initApp() {
     initServiceWorker();
     checkAndRestoreToken();
     waitForGoogleSDK();
     bindEvents();
-});
+}
+
+// 優化：兼容 defer 與非 defer 載入
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
+}
 
 function initServiceWorker() {
     if ('serviceWorker' in navigator) {
@@ -47,7 +50,6 @@ function checkAndRestoreToken() {
     const expireTime = localStorage.getItem(STORAGE_KEYS.EXPIRE);
     const now = Date.now();
 
-    // 提早 5 分鐘判定過期，避免 API 呼叫到一半失效
     if (savedToken && expireTime && now < (parseInt(expireTime) - 300000)) {
         AppState.accessToken = savedToken;
         updateLoginBtnState('🟢 自動連線中', '#34a853');
@@ -61,7 +63,6 @@ function checkAndRestoreToken() {
     }
 }
 
-// 確保 Google SDK 確實載入完成
 function waitForGoogleSDK() {
     if (typeof google !== 'undefined' && google.accounts) {
         initGoogleClient();
@@ -132,7 +133,6 @@ function clearAuthData() {
     updateLoginBtnState('🔵 Google 登入', 'rgba(66, 133, 244, 0.25)');
 }
 
-// 加入 Timeout 與自動重試機制，徹底解決卡頓與連線失敗問題
 async function fetchGoogleAPI(url, options = {}, retries = 2) {
     if (!AppState.accessToken) {
         hideLoading();
@@ -146,7 +146,6 @@ async function fetchGoogleAPI(url, options = {}, retries = 2) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
     
-    // 優化：若外部傳入自訂 signal，合併而非覆蓋，避免呼叫方的取消邏輯被忽略
     if (options.signal) {
         options.signal.addEventListener('abort', () => controller.abort());
     }
@@ -265,15 +264,12 @@ async function processImage(event, index) {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
         
-        // 優化：直接使用 canvas.toBlob() 取得 blob，避免 toDataURL + fetch 的冗餘 base64 編解碼
         const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.7));
         if (!blob) throw new Error('圖片壓縮失敗');
         
-        // 優化：使用 blob URL 替代 data URL 作為預覽，減少約 33% 的記憶體佔用
         const blobUrl = URL.createObjectURL(blob);
         const imgEl = $('img' + index);
         
-        // 釋放舊的 blob URL（若存在）
         if (imgEl.src && imgEl.src.startsWith('blob:')) {
             URL.revokeObjectURL(imgEl.src);
         }
@@ -284,7 +280,6 @@ async function processImage(event, index) {
         $('ph' + index).style.display = 'none';
         $('del' + index).style.display = 'block';
         
-        // 優化：正確移除 DOM 元素，而非設定無效的 width/height = 0
         canvas.remove();
 
         await uploadImageToDrive(blob, fileName, index);
@@ -322,7 +317,6 @@ async function uploadImageToDrive(blob, filename, imgIndex) {
 }
 
 async function removeImage(index, event) {
-    // 優化：button 不在 form 內，preventDefault 無意義，保留 stopPropagation 防止觸發 label
     event.stopPropagation();
     const fileId = AppState.cloudImageData['fileId' + index];
     
@@ -339,14 +333,11 @@ async function removeImage(index, event) {
 }
 
 /**
- * 優化：提取照片區塊重置邏輯，統一管理 blob URL 釋放，避免記憶體泄漏
- * @param {number} index - 照片區塊編號 (1-4)
- * @param {string|null} placeholderText - 自訂 placeholder 文字，null 則使用預設
+ * 統一重置照片區塊，並正確釋放 blob URL 防止記憶體泄漏
  */
 function resetPhotoArea(index, placeholderText = null) {
     const imgEl = $('img' + index);
     
-    // 關鍵優化：釋放 blob URL，防止記憶體持續累積
     if (imgEl.src && imgEl.src.startsWith('blob:')) {
         URL.revokeObjectURL(imgEl.src);
     }
@@ -443,7 +434,6 @@ async function cloudLoad() {
         fields.forEach(f => { if(targetData[f] !== undefined) $(f).value = targetData[f]; });
         for(let c=1; c<=6; c++) $('cb'+c).checked = targetData['cb'+c] || false;
         
-        // 優化：先重置所有照片區域（釋放舊 blob URL），再載入新資料
         for (let i = 1; i <= 4; i++) {
             resetPhotoArea(i);
             $('pd'+i).value = targetData['pd'+i] || ''; 
@@ -468,7 +458,6 @@ async function cloudLoad() {
                         if (!mediaResponse.ok) throw new Error();
                         const blob = await mediaResponse.blob();
                         
-                        // 優化：使用 blob URL 減少記憶體佔用
                         const blobUrl = URL.createObjectURL(blob);
                         imgEl.src = blobUrl; 
                         imgEl.style.display = 'block'; 
@@ -476,7 +465,6 @@ async function cloudLoad() {
                         delEl.style.display = 'block';
                         AppState.cloudImageData['fileId' + i] = fileId;
                     } catch (e) {
-                        // 保持與原程式相同的錯誤提示文字
                         resetPhotoArea(i, '⚠️ 相片讀取失敗');
                     }
                 };
@@ -521,7 +509,6 @@ function hideLoading() { $('loader').style.display = 'none'; }
 function showInfo() { $('infoModal').style.display = 'flex'; }
 function closeInfo() { $('infoModal').style.display = 'none'; }
 
-// 優化：凍結詞庫資料，防止運行時意外竄改
 const dictData = Object.freeze({
     "美勞區": ["喜歡探索色彩，畫作充滿想像力。","能運用多種媒材，展現豐富創造力。","握筆姿勢進步，線條描繪越來越穩。","能專注剪紙，手眼協調能力提升了。","對黏土捏塑有興趣，手部小肌肉靈活。","喜歡動手做勞作，展現獨特藝術美感。","能大膽運用色彩，表達內心的想法。","撕貼技巧熟練，完成品十分精美。","塗鴉時充滿自信，能分享創作故事。","喜歡嘗試新畫材，發揮無限創意。","運用水彩畫畫，色彩層次十分豐富。","能耐心完成作品，專注力值得肯定。","剪刀使用越來越順手，能剪出形狀。","喜歡摺紙活動，空間概念逐漸成形。","能運用廢棄物，改造成有趣的玩具。","畫作構圖完整，能畫出具體的事物。","透過玩色遊戲，增進了視覺敏銳度。","樂於分享畫作，口語表達能力進步。","能仔細觀察事物，並表現在畫作上。","捏塑立體造型，空間感知能力提升。","手指畫充滿童趣，觸覺刺激發展好。","喜歡拓印遊戲，發現圖案的變化。","能獨立完成勞作，自信心大大增加。","著色不超線，手部控制能力很好。","運用點線面元素，豐富了畫面層次。","喜歡串珠珠，精細動作越來越棒了。","能用畫筆畫出家人，情感表達豐富。","享受玩泥巴的樂趣，觸覺發展良好。","剪貼形狀組合，激發了幾何想像力。","畫畫時充滿笑容，十分享受創作。","喜歡揉捏黏土，增進手掌的力量。","能仔細黏貼素材，做事態度很細心。","對色彩敏銳，能調配出美麗的顏色。","運用樹葉作畫，親近大自然的美。","能夠收拾畫具，養成良好的好習慣。","勞作充滿巧思，展現解決問題能力。","喜歡玩印章，對圖騰感到十分好奇。","畫圖能表達情緒，是很好的抒發。","能與同伴合作畫畫，發揮團隊精神。","剪紙對稱圖形，理解了對稱的概念。","喜歡做卡片，懂得表達感恩的心。","運用毛線創作，體驗不同材質的美。","畫作充滿活力，展現出開朗的個性。","能細心妝點作品，美感經驗大提升.","運用海綿蓋印，訓練手腕靈活度。","喜歡玩沙畫，專注力與耐心俱佳。","能夠大面積塗色，手背肌肉更有力。","透過捏麵人，認識傳統藝術之美。","勞作設計獨特，具有個人風格特色。","畫作內容豐富，展現敏銳觀察力。"],
     "語文區": ["喜歡翻閱繪本，培養了良好閱讀習慣。","能專注聽故事，聽覺理解能力很棒。","樂於分享故事，口語表達越來越流利。","認得許多常見字，文字敏感度提升.","能看圖說故事，發揮了無窮想像力。","喜歡聽兒歌，跟著節奏快樂地哼唱。","會主動問問題，展現強烈求知慾望。","能記住故事內容，記憶力十分出色。","喜歡玩字卡，認識了好多新詞彙。","說話咬字清晰，能完整表達想法。","樂意與同伴交談，人際互動能力佳。","能模仿故事角色，展現戲劇天分。","喜歡聽錄音帶，培養獨立學習能力。","會用圖畫記錄故事，讀寫萌發進步。","能說出完整句子，語法結構很正確。","對文字充滿好奇，主動詢問字怎麼唸。","能安靜看書，專注力可以持續很久。","喜歡玩猜謎遊戲，邏輯思考大躍進。","會念簡單唐詩，感受語文的韻律美。","能聽懂老師指令，並確實做出動作。","樂於參與討論，勇於發表自己見解。","喜歡角色扮演，語言使用更情境化。","能用豐富詞彙，描述發生的事情。","會愛惜書本，懂得輕輕翻閱圖畫書。","能分辨不同聲音，聽覺辨識力很好。","喜歡聽神話故事，想像空間更廣闊。","能回答故事問題，理解能力大提升。","說話音量適中，懂得在室內輕聲細語。","喜歡念順口溜，舌頭肌肉更靈活了。","能夠覆述聽過的話，專注傾聽很棒。","喜歡看科普圖畫書，增廣見聞。","會用積木排字，將語文融入遊戲中。","喜歡聽大野狼故事，能分辨善惡。","樂於在大家面前說話，展現大將之風。","能將字卡配對，視覺辨識能力提升。","喜歡指讀文字，建立文字與聲音連結。","會用手指偶說故事，手腦並用很棒。","能夠說出自己的名字，並認得寫法。","喜歡聽床邊故事，情緒感到很穩定。","說話有禮貌，常說請謝謝對不起。","能形容物品特徵，詞彙量大幅增加。","喜歡玩文字接龍，反應十分敏捷。","能耐心聽別人說完話，懂得尊重人。","喜歡聽動物叫聲，學習模仿發音。","能夠理解相反詞，語文邏輯很清晰。","喜歡看立體書，引發強烈閱讀興趣。","會用不同語氣說話，表達情緒起伏。","能夠分辨相似的發音，聽力很敏銳。","喜歡聽長篇故事，持續注意力變長。","能將生活經驗，融入到故事表達中。"],
@@ -587,3 +574,4 @@ function printToPDF() {
     document.title = studentName ? `${studentName}_學習區紀錄` : "未命名幼生_學習區紀錄";
     setTimeout(() => { window.print(); }, 500);
 }
+
