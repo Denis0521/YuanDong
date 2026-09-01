@@ -621,47 +621,147 @@ function showToast() {
     setTimeout(() => { toast.style.display = 'none'; }, 2000);
 }
 
-// ==================== 列印與 PDF 輸出 ====================
+// ==================== 列印與 PDF 輸出與合併 ====================
+function openPdfModal() {
+    $('pdfModal').style.display = 'flex';
+}
+
+function closePdfModal() {
+    $('pdfModal').style.display = 'none';
+}
+
 function printToPDF() {
-    // 確保列印前網頁標題是正確的姓名
     const studentName = $('studentName').value.trim();
     document.title = studentName ? `${studentName}_學習區紀錄` : "未命名幼生_學習區紀錄";
 
-    // 延遲確保 iOS/Android 系統的背景層有抓到新標題
     setTimeout(() => {
         window.print();
     }, 500);
 }
 
+// 核心合併邏輯：徹底移除各種預先檢查，交由 PDFLib 直接解析並印出真實錯誤
+async function mergeLocalPDFs(event) {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    if (typeof PDFLib === 'undefined') {
+        alert('❌ PDF 處理模組尚未載入完成，請檢查網路連線或稍後再試。');
+        event.target.value = '';
+        return;
+    }
+
+    if (files.length < 2) {
+        alert('請至少選擇 2 個 PDF 檔案進行合併！');
+        event.target.value = '';
+        return;
+    }
+
+    showLoading('📑 正在讀取並合併 PDF，請稍候...');
+
+    try {
+        const mergedPdf = await PDFLib.PDFDocument.create();
+        let validPdfCount = 0;
+        let errorDetails = []; // 專門用來收集失敗的真實原因
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            try {
+                // 如果檔案連大小都沒有，絕對讀不出東西
+                if (file.size === 0) throw new Error("檔案大小為 0，請確認是否選錯檔案");
+                
+                let arrayBuffer;
+                
+                // 優先使用新標準 arrayBuffer，若不支援則降級使用 FileReader
+                if (typeof file.arrayBuffer === 'function') {
+                    arrayBuffer = await file.arrayBuffer();
+                } else {
+                    arrayBuffer = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = () => reject(new Error('FileReader 讀取失敗'));
+                        reader.readAsArrayBuffer(file);
+                    });
+                }
+
+                if (!arrayBuffer || arrayBuffer.byteLength === 0) {
+                    throw new Error("無法讀取內容 (Byte 為空)");
+                }
+
+                // 強制解析 PDF，忽略加密等可能導致失敗的設定
+                const pdf = await PDFLib.PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
+                const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+                
+                copiedPages.forEach((page) => mergedPdf.addPage(page));
+                validPdfCount++;
+                
+            } catch (e) {
+                // 如果任何一個環節出錯，把檔案名稱跟系統給的錯誤訊息存起來
+                errorDetails.push(`[${file.name || '未知檔案'}] 失敗原因: ${e.message}`);
+            }
+        }
+
+        // 如果讀取成功的少於 2 個，我們把剛剛收集的錯誤印在畫面上
+        if (validPdfCount < 2) {
+            let msg = `❌ 合併失敗！\n成功讀取: ${validPdfCount} 個\n需要至少 2 個有效的 PDF 檔案。\n\n【詳細錯誤原因】\n` + errorDetails.join('\n');
+            alert(msg);
+            hideLoading();
+            event.target.value = '';
+            return;
+        }
+
+        const pdfBytes = await mergedPdf.save();
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `合併後的紀錄_${new Date().getTime()}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        hideLoading();
+        closePdfModal();
+        alert(`✅ 成功合併了 ${validPdfCount} 個 PDF！\n請至手機的「下載」資料夾查看。`);
+        
+        // 若有少數幾個失敗，也給予提示
+        if (errorDetails.length > 0) {
+            alert(`⚠️ 有 ${errorDetails.length} 個檔案被略過：\n` + errorDetails.join('\n'));
+        }
+
+    } catch (err) {
+        hideLoading();
+        alert('❌ 發生未預期的嚴重錯誤：\n' + err.message);
+    }
+
+    event.target.value = ''; // 清空狀態，允許重新選取
+}
+
 // ==================== 相片來源選擇邏輯 ====================
 let currentPhotoIndex = null;
 
-// 打開相片來源視窗
 function openPhotoSourceModal(index) {
     currentPhotoIndex = index;
     $('photoSourceModal').style.display = 'flex';
 }
 
-// 關閉相片來源視窗
 function closePhotoSourceModal() {
     $('photoSourceModal').style.display = 'none';
     currentPhotoIndex = null;
 }
 
-// 選擇來源並觸發上傳
 function selectPhotoSource(source) {
     if (!currentPhotoIndex) return;
     
     const fileInput = $('file' + currentPhotoIndex);
     
-    // 如果選擇相機，加上 capture 屬性強制開啟後鏡頭；否則移除該屬性開啟相簿
     if (source === 'camera') {
         fileInput.setAttribute('capture', 'environment');
     } else {
         fileInput.removeAttribute('capture');
     }
     
-    // 關閉視窗並觸發隱藏的檔案上傳輸入框
     closePhotoSourceModal();
     fileInput.click();
 }

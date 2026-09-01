@@ -14,6 +14,8 @@
 <meta name="apple-mobile-web-app-title" content="學習區紀錄">
 <link rel="apple-touch-icon" href="icon-192.png">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<!-- 引入 PDF-lib 進行 PDF 合併與操作 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 
 <style>
     :root {
@@ -943,7 +945,7 @@
         <button class="btn btn-save btn-third" onclick="cloudSave()">☁️ 存檔至雲</button>
         <button class="btn btn-load btn-third" onclick="cloudLoad()">📥 載入資料</button>
 
-        <button class="btn btn-print btn-third" onclick="printToPDF()">🖨️ 轉存 PDF</button>
+        <button class="btn btn-print btn-third" onclick="openPdfModal()">🖨️ 轉存 PDF</button>
         <button class="btn btn-dict btn-third" onclick="openDictModal()">💡 重點能力</button>
         <button class="btn btn-info btn-third" onclick="showInfo()">📖 操作說明</button>
     </div>
@@ -1094,7 +1096,7 @@
         <div id="dictView1">
             <button class="modal-close" onclick="closeDictModal()">✖</button>
             <h2 class="modal-title">💡 挑選重點能力區塊</h2>
-            <p style="color: #666; font-size: 15px; margin-bottom: 0;">請點擊下方區塊，查看專屬的評語詞庫：</p>
+            <p style="color: #666; font-size: 15px; margin-bottom: 0;">請點擊下方區塊，查看專屬評語詞庫：</p>
             <div class="dict-grid">
                 <button onclick="showCategoryDict('美勞區')">✂️ 美勞區</button>
                 <button onclick="showCategoryDict('語文區')">📚 語文區</button>
@@ -1128,6 +1130,20 @@
     </div>
 </div>
 
-<script src="app.js?v=23" defer></script>
+<div class="modal-overlay" id="pdfModal" onclick="closePdfModal()">
+    <div class="modal-content" onclick="event.stopPropagation()" style="text-align: center; max-width: 350px;">
+        <button class="modal-close" onclick="closePdfModal()">✖</button>
+        <h2 class="modal-title" style="text-align: center;">🖨️ PDF 輸出與合併</h2>
+        <p style="color: #555; margin-bottom: 20px;">請選擇您要執行的動作：</p>
+        <div style="display: flex; flex-direction: column; gap: 15px; justify-content: center;">
+            <button class="btn btn-print" style="height: 45px; font-size: 16px; border-radius: 8px;" onclick="printToPDF(); closePdfModal();">📄 轉存目前紀錄</button>
+            <button class="btn btn-save" style="height: 45px; font-size: 16px; border-radius: 8px; background: linear-gradient(to bottom, #d84315, #bf360c);" onclick="document.getElementById('pdfUploader').click()">📑 PDF 合併 (多檔)</button>
+            <!-- 隱藏的檔案選擇器，允許選擇手機本地的多個 PDF -->
+            <input type="file" id="pdfUploader" multiple accept="application/pdf" style="display:none;" onchange="mergeLocalPDFs(event)">
+        </div>
+    </div>
+</div>
+
+<script src="app.js?v=24" defer></script>
 </body>
 </html>
