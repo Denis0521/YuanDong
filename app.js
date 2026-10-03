@@ -621,147 +621,326 @@ function showToast() {
     setTimeout(() => { toast.style.display = 'none'; }, 2000);
 }
 
-// ==================== 列印與 PDF 輸出與合併 ====================
-function openPdfModal() {
-    $('pdfModal').style.display = 'flex';
-}
-
-function closePdfModal() {
-    $('pdfModal').style.display = 'none';
-}
-
+// ==================== 列印與 PDF 輸出 ====================
 function printToPDF() {
+    // 確保列印前網頁標題是正確的姓名
     const studentName = $('studentName').value.trim();
     document.title = studentName ? `${studentName}_學習區紀錄` : "未命名幼生_學習區紀錄";
 
+    // 延遲確保 iOS/Android 系統的背景層有抓到新標題
     setTimeout(() => {
         window.print();
     }, 500);
 }
 
-// 核心合併邏輯：徹底移除各種預先檢查，交由 PDFLib 直接解析並印出真實錯誤
-async function mergeLocalPDFs(event) {
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
-
-    if (typeof PDFLib === 'undefined') {
-        alert('❌ PDF 處理模組尚未載入完成，請檢查網路連線或稍後再試。');
-        event.target.value = '';
-        return;
-    }
-
-    if (files.length < 2) {
-        alert('請至少選擇 2 個 PDF 檔案進行合併！');
-        event.target.value = '';
-        return;
-    }
-
-    showLoading('📑 正在讀取並合併 PDF，請稍候...');
-
-    try {
-        const mergedPdf = await PDFLib.PDFDocument.create();
-        let validPdfCount = 0;
-        let errorDetails = []; // 專門用來收集失敗的真實原因
-
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            try {
-                // 如果檔案連大小都沒有，絕對讀不出東西
-                if (file.size === 0) throw new Error("檔案大小為 0，請確認是否選錯檔案");
-                
-                let arrayBuffer;
-                
-                // 優先使用新標準 arrayBuffer，若不支援則降級使用 FileReader
-                if (typeof file.arrayBuffer === 'function') {
-                    arrayBuffer = await file.arrayBuffer();
-                } else {
-                    arrayBuffer = await new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onload = () => resolve(reader.result);
-                        reader.onerror = () => reject(new Error('FileReader 讀取失敗'));
-                        reader.readAsArrayBuffer(file);
-                    });
-                }
-
-                if (!arrayBuffer || arrayBuffer.byteLength === 0) {
-                    throw new Error("無法讀取內容 (Byte 為空)");
-                }
-
-                // 強制解析 PDF，忽略加密等可能導致失敗的設定
-                const pdf = await PDFLib.PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
-                const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
-                
-                copiedPages.forEach((page) => mergedPdf.addPage(page));
-                validPdfCount++;
-                
-            } catch (e) {
-                // 如果任何一個環節出錯，把檔案名稱跟系統給的錯誤訊息存起來
-                errorDetails.push(`[${file.name || '未知檔案'}] 失敗原因: ${e.message}`);
-            }
-        }
-
-        // 如果讀取成功的少於 2 個，我們把剛剛收集的錯誤印在畫面上
-        if (validPdfCount < 2) {
-            let msg = `❌ 合併失敗！\n成功讀取: ${validPdfCount} 個\n需要至少 2 個有效的 PDF 檔案。\n\n【詳細錯誤原因】\n` + errorDetails.join('\n');
-            alert(msg);
-            hideLoading();
-            event.target.value = '';
-            return;
-        }
-
-        const pdfBytes = await mergedPdf.save();
-        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-        const url = URL.createObjectURL(blob);
-
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `合併後的紀錄_${new Date().getTime()}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        hideLoading();
-        closePdfModal();
-        alert(`✅ 成功合併了 ${validPdfCount} 個 PDF！\n請至手機的「下載」資料夾查看。`);
-        
-        // 若有少數幾個失敗，也給予提示
-        if (errorDetails.length > 0) {
-            alert(`⚠️ 有 ${errorDetails.length} 個檔案被略過：\n` + errorDetails.join('\n'));
-        }
-
-    } catch (err) {
-        hideLoading();
-        alert('❌ 發生未預期的嚴重錯誤：\n' + err.message);
-    }
-
-    event.target.value = ''; // 清空狀態，允許重新選取
-}
-
 // ==================== 相片來源選擇邏輯 ====================
 let currentPhotoIndex = null;
 
+// 打開相片來源視窗
 function openPhotoSourceModal(index) {
     currentPhotoIndex = index;
     $('photoSourceModal').style.display = 'flex';
 }
 
+// 關閉相片來源視窗
 function closePhotoSourceModal() {
     $('photoSourceModal').style.display = 'none';
     currentPhotoIndex = null;
 }
 
+// 選擇來源並觸發上傳
 function selectPhotoSource(source) {
     if (!currentPhotoIndex) return;
     
     const fileInput = $('file' + currentPhotoIndex);
     
+    // 如果選擇相機，加上 capture 屬性強制開啟後鏡頭；否則移除該屬性開啟相簿
     if (source === 'camera') {
         fileInput.setAttribute('capture', 'environment');
     } else {
         fileInput.removeAttribute('capture');
     }
     
+    // 關閉視窗並觸發隱藏的檔案上傳輸入框
     closePhotoSourceModal();
     fileInput.click();
 }
+
+
+// ==================== PDF 功能選單（轉存 / 合併） ====================
+const PDF_LIB_URL = 'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js';
+let pdfMergeList = [];      // [{ file, id }]，順序即合併順序
+let pdfMergeBusy = false;
+let pdfMergeResult = null;  // { blob, name }
+let pdfItemSeq = 0;
+let pdfLibPromise = null;
+
+function openPdfMenu() {
+    $('pdfView1').style.display = 'block';
+    $('pdfView2').style.display = 'none';
+    $('pdfMenuModal').style.display = 'flex';
+}
+
+function closePdfMenu() {
+    if (pdfMergeBusy) return;
+    $('pdfMenuModal').style.display = 'none';
+    resetPdfMerge();
+}
+
+// 點擊背景：只有在選單首頁才關閉，避免合併清單被誤觸清掉
+function pdfOverlayClick() {
+    if ($('pdfView1').style.display !== 'none') closePdfMenu();
+}
+
+// 選項一：轉存 PDF（沿用原本的 printToPDF，不做任何修改）
+function choosePdfExport() {
+    $('pdfMenuModal').style.display = 'none';
+    resetPdfMerge();
+    printToPDF();
+}
+
+// 選項二：合併 PDF
+function choosePdfMerge() {
+    $('pdfView1').style.display = 'none';
+    $('pdfView2').style.display = 'block';
+    renderPdfMergeList();
+    loadPdfLib().catch(() => {}); // 先在背景預載合併元件，失敗時等按下合併再提示
+}
+
+function backToPdfMenu() {
+    if (pdfMergeBusy) return;
+    $('pdfView2').style.display = 'none';
+    $('pdfView1').style.display = 'block';
+}
+
+function resetPdfMerge() {
+    pdfMergeList = [];
+    pdfMergeResult = null;
+    $('pdfMergeInput').value = '';
+    $('pdfMergeName').value = '';
+    setPdfMsg('');
+    $('pdfMergeDone').style.display = 'none';
+}
+
+function setPdfMsg(text, type) {
+    const el = $('pdfMergeMsg');
+    el.textContent = text || '';
+    el.className = 'pdf-msg' + (type ? ' ' + type : '');
+}
+
+function loadPdfLib() {
+    if (window.PDFLib) return Promise.resolve();
+    if (pdfLibPromise) return pdfLibPromise;
+    pdfLibPromise = new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = PDF_LIB_URL;
+        s.onload = () => window.PDFLib ? resolve() : reject(new Error('合併元件載入不完整'));
+        s.onerror = () => reject(new Error('無法載入合併元件，請確認網路連線後再試一次'));
+        document.head.appendChild(s);
+    }).catch(err => {
+        pdfLibPromise = null; // 允許下次重試
+        throw err;
+    });
+    return pdfLibPromise;
+}
+
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' KB';
+    return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+}
+
+function defaultMergedName() {
+    const d = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    return `合併PDF_${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
+}
+
+function cleanPdfFileName(name) {
+    let n = (name || '').replace(/[\\/:*?"<>|]/g, '').trim();
+    n = n.replace(/\.pdf$/i, '').trim();
+    if (!n) n = defaultMergedName();
+    return n + '.pdf';
+}
+
+function addPdfFiles(fileList) {
+    let skipped = 0;
+    Array.from(fileList).forEach(file => {
+        const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
+        if (isPdf) pdfMergeList.push({ file, id: ++pdfItemSeq });
+        else skipped++;
+    });
+    pdfMergeResult = null;
+    $('pdfMergeDone').style.display = 'none';
+    renderPdfMergeList();
+    if (skipped > 0) setPdfMsg(`已略過 ${skipped} 個非 PDF 檔案`, 'error');
+    else setPdfMsg('');
+}
+
+function movePdfItem(index, dir) {
+    const to = index + dir;
+    if (to < 0 || to >= pdfMergeList.length) return;
+    const tmp = pdfMergeList[index];
+    pdfMergeList[index] = pdfMergeList[to];
+    pdfMergeList[to] = tmp;
+    pdfMergeResult = null;
+    $('pdfMergeDone').style.display = 'none';
+    renderPdfMergeList();
+}
+
+function removePdfItem(index) {
+    pdfMergeList.splice(index, 1);
+    pdfMergeResult = null;
+    $('pdfMergeDone').style.display = 'none';
+    renderPdfMergeList();
+}
+
+function renderPdfMergeList() {
+    const container = $('pdfMergeList');
+    container.innerHTML = '';
+    const frag = document.createDocumentFragment();
+
+    pdfMergeList.forEach((item, i) => {
+        const row = document.createElement('div');
+        row.className = 'pdf-file-item';
+
+        const idx = document.createElement('div');
+        idx.className = 'pdf-file-idx';
+        idx.textContent = i + 1;
+
+        const info = document.createElement('div');
+        info.className = 'pdf-file-info';
+        const nm = document.createElement('div');
+        nm.className = 'pdf-file-name';
+        nm.textContent = item.file.name;   // 用 textContent，避免檔名含特殊字元
+        const sz = document.createElement('div');
+        sz.className = 'pdf-file-size';
+        sz.textContent = formatFileSize(item.file.size);
+        info.appendChild(nm);
+        info.appendChild(sz);
+
+        const mkBtn = (label, title, cls, handler, disabled) => {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'pdf-mini' + (cls ? ' ' + cls : '');
+            b.textContent = label;
+            b.title = title;
+            b.disabled = !!disabled;
+            b.addEventListener('click', handler);
+            return b;
+        };
+
+        row.appendChild(idx);
+        row.appendChild(info);
+        row.appendChild(mkBtn('▲', '上移', '', () => movePdfItem(i, -1), i === 0));
+        row.appendChild(mkBtn('▼', '下移', '', () => movePdfItem(i, 1), i === pdfMergeList.length - 1));
+        row.appendChild(mkBtn('✖', '移除', 'del', () => removePdfItem(i)));
+        frag.appendChild(row);
+    });
+    container.appendChild(frag);
+
+    const count = pdfMergeList.length;
+    $('pdfMergeEmpty').style.display = count === 0 ? 'block' : 'none';
+    $('pdfNameRow').style.display = count === 0 ? 'none' : 'flex';
+    if (count > 0 && !$('pdfMergeName').value) $('pdfMergeName').value = defaultMergedName();
+
+    const btn = $('pdfMergeBtn');
+    btn.disabled = count < 2 || pdfMergeBusy;
+    btn.textContent = count < 2 && count > 0 ? '🔗 請再加入至少 1 個 PDF' : '🔗 合併並下載' + (count >= 2 ? `（${count} 個檔案）` : '');
+}
+
+function downloadBlob(blob, name) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+async function mergePdfFiles() {
+    if (pdfMergeBusy) return;
+    if (pdfMergeList.length < 2) {
+        setPdfMsg('請至少選擇 2 個 PDF 檔案才能合併', 'error');
+        return;
+    }
+
+    const btn = $('pdfMergeBtn');
+    pdfMergeBusy = true;
+    btn.disabled = true;
+    $('pdfMergeDone').style.display = 'none';
+    setPdfMsg('');
+
+    try {
+        btn.textContent = '⏳ 準備合併元件中...';
+        await loadPdfLib();
+
+        const { PDFDocument } = window.PDFLib;
+        const merged = await PDFDocument.create();
+        const total = pdfMergeList.length;
+
+        for (let i = 0; i < total; i++) {
+            const { file } = pdfMergeList[i];
+            btn.textContent = `⏳ 合併中 (${i + 1}/${total})...`;
+
+            let src;
+            try {
+                const buf = await file.arrayBuffer();
+                src = await PDFDocument.load(buf);
+            } catch (e) {
+                throw new Error(`「${file.name}」無法讀取，可能已加密、受密碼保護或檔案已損毀`);
+            }
+            const pages = await merged.copyPages(src, src.getPageIndices());
+            pages.forEach(p => merged.addPage(p));
+
+            // 讓出執行緒，避免畫面卡住
+            await new Promise(r => setTimeout(r, 0));
+        }
+
+        btn.textContent = '⏳ 產生檔案中...';
+        const bytes = await merged.save();
+        const name = cleanPdfFileName($('pdfMergeName').value);
+        $('pdfMergeName').value = name.replace(/\.pdf$/i, '');
+        pdfMergeResult = { blob: new Blob([bytes], { type: 'application/pdf' }), name };
+
+        downloadBlob(pdfMergeResult.blob, name);
+        setPdfMsg(`✅ 已合併 ${total} 個檔案，共 ${merged.getPageCount()} 頁：${name}`, 'ok');
+
+        $('pdfMergeDone').style.display = 'flex';
+        const canShare = navigator.canShare && navigator.canShare({
+            files: [new File([pdfMergeResult.blob], name, { type: 'application/pdf' })]
+        });
+        $('pdfShareBtn').style.display = canShare ? 'block' : 'none';
+    } catch (err) {
+        console.error('合併 PDF 失敗:', err);
+        setPdfMsg('❌ ' + (err && err.message ? err.message : '合併失敗，請稍後再試'), 'error');
+    } finally {
+        pdfMergeBusy = false;
+        renderPdfMergeList();
+    }
+}
+
+function downloadMergedAgain() {
+    if (pdfMergeResult) downloadBlob(pdfMergeResult.blob, pdfMergeResult.name);
+}
+
+// 手機上可透過系統分享面板「儲存到檔案」等方式存檔
+async function shareMergedPdf() {
+    if (!pdfMergeResult) return;
+    try {
+        const file = new File([pdfMergeResult.blob], pdfMergeResult.name, { type: 'application/pdf' });
+        await navigator.share({ files: [file], title: pdfMergeResult.name });
+    } catch (e) {
+        if (e && e.name !== 'AbortError') setPdfMsg('❌ 無法開啟分享面板，請改用「再次下載」', 'error');
+    }
+}
+
+// 綁定檔案選擇
+window.addEventListener('load', () => {
+    $('pdfMergeInput').addEventListener('change', (e) => {
+        if (e.target.files && e.target.files.length) addPdfFiles(e.target.files);
+        e.target.value = ''; // 允許再次選到同一個檔案
+    });
+});

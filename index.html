@@ -1301,6 +1301,107 @@
     border-radius: 20px;
 }
 
+/* =====================================================================
+   PDF 功能選單 / 合併 PDF
+   ===================================================================== */
+.pdf-choice-list { display: flex; flex-direction: column; gap: 16px; margin-top: 18px; padding-bottom: 6px; }
+.pdf-choice {
+    --h: #e2566e; --hl: #ffe3e8; --he: #f1a6b3;
+    display: flex; align-items: center; gap: 14px;
+    width: 100%; padding: 16px 18px; text-align: left;
+    font-family: inherit; cursor: pointer;
+    border: 2px solid var(--hl); border-radius: 24px;
+    background: linear-gradient(180deg, #ffffff, var(--hl));
+    color: var(--h);
+    box-shadow: 0 5px 0 var(--he), 0 10px 16px rgba(45, 55, 130, 0.14);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+.pdf-choice-merge { --h: #1796aa; --hl: #d6f3f7; --he: #8fd3de; }
+.pdf-choice:hover { transform: translateY(-1px); }
+.pdf-choice:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--he), 0 3px 6px rgba(45, 55, 130, 0.14); }
+.pdf-choice-icon { font-size: 32px; flex-shrink: 0; filter: drop-shadow(0 3px 3px rgba(45, 55, 130, 0.22)); }
+.pdf-choice-text { display: flex; flex-direction: column; gap: 3px; }
+.pdf-choice-text b { font-size: 19px; }
+.pdf-choice-text small { font-size: 13px; font-weight: normal; color: #5b6490; line-height: 1.4; }
+
+.pdf-merge-title { display: flex; align-items: center; gap: 12px; }
+.pdf-back {
+    font-family: inherit; font-size: 15px; cursor: pointer; color: var(--ink);
+    border: none; border-radius: 999px; padding: 6px 14px;
+    background: linear-gradient(180deg, #ffffff, #e6ebfb);
+    box-shadow: 0 3px 0 var(--line);
+}
+.pdf-back:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--line); }
+
+.pdf-add-btn, .pdf-merge-btn, .pdf-again-btn {
+    --b1: #6aa0ff; --b2: #3f78ee; --be: #2a58c4;
+    width: 100%; padding: 13px 16px; font-family: inherit; font-size: 16px; font-weight: bold;
+    color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); cursor: pointer;
+    border: none; border-radius: 999px;
+    background: linear-gradient(180deg, var(--b1), var(--b2));
+    box-shadow: 0 4px 0 var(--be), 0 8px 12px rgba(45, 55, 130, 0.25),
+                inset 0 2px 0 rgba(255, 255, 255, 0.45), inset 0 -3px 5px rgba(0, 0, 0, 0.10);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+.pdf-merge-btn { --b1: #4ed3a0; --b2: #25aa7b; --be: #177a58; margin-top: 14px; }
+.pdf-again-btn { --b1: #ffbb6b; --b2: #f08f2c; --be: #b96412; font-size: 15px; padding: 11px 12px; }
+.pdf-add-btn:active, .pdf-merge-btn:active, .pdf-again-btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 var(--be), 0 3px 5px rgba(45, 55, 130, 0.25);
+}
+.pdf-merge-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: 0 4px 0 var(--be); }
+
+.pdf-empty {
+    margin-top: 14px; padding: 16px; text-align: center;
+    font-size: 14px; line-height: 1.6; color: var(--ink-soft);
+    background: var(--mist); border-radius: 20px; border: 2px dashed var(--line);
+}
+.pdf-file-list { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+.pdf-file-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 8px 8px 10px; background: #ffffff;
+    border: 1.5px solid var(--line); border-radius: 18px; box-shadow: 0 3px 0 var(--line);
+}
+.pdf-file-idx {
+    flex: 0 0 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: bold; color: #fff;
+    background: linear-gradient(180deg, #6f87f2, var(--primary-blue));
+    box-shadow: 0 2px 0 #2c43b5;
+}
+.pdf-file-info { flex: 1; min-width: 0; }
+.pdf-file-name { font-size: 14px; font-weight: bold; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pdf-file-size { font-size: 12px; color: var(--ink-soft); }
+.pdf-mini {
+    flex: 0 0 32px; width: 32px; height: 32px; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; line-height: 1; color: var(--ink-soft); cursor: pointer;
+    border: none; border-radius: 50%;
+    background: linear-gradient(180deg, #ffffff, #e6ebfb);
+    box-shadow: 0 3px 0 var(--line);
+    -webkit-tap-highlight-color: transparent;
+}
+.pdf-mini:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--line); }
+.pdf-mini:disabled { opacity: 0.35; cursor: default; transform: none; box-shadow: 0 3px 0 var(--line); }
+.pdf-mini.del { color: #d9485f; }
+
+.pdf-name-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; font-size: 14px; color: var(--ink); font-weight: bold; }
+.pdf-name-row label { flex-shrink: 0; }
+.pdf-name-row input {
+    flex: 1; min-width: 0; height: 40px; padding: 0 14px;
+    font-family: inherit; font-size: 16px; color: var(--ink);
+    border: none; border-radius: 14px; background: var(--mist);
+    box-shadow: inset 0 2px 4px rgba(45, 55, 130, 0.16), 0 1px 0 #ffffff;
+}
+.pdf-msg { margin-top: 12px; font-size: 14px; line-height: 1.5; border-radius: 14px; padding: 0; }
+.pdf-msg:not(:empty) { padding: 8px 12px; background: var(--mist); color: var(--ink); }
+.pdf-msg.error:not(:empty) { background: #fff0f2; color: #d9485f; }
+.pdf-msg.ok:not(:empty) { background: #e4f8ee; color: #177a58; }
+.pdf-done { display: flex; gap: 10px; margin-top: 14px; }
+.pdf-done .pdf-again-btn { flex: 1; }
+
 @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; }
 }
@@ -1348,7 +1449,7 @@
         <button class="btn btn-save btn-third" onclick="cloudSave()">☁️ 存檔至雲</button>
         <button class="btn btn-load btn-third" onclick="cloudLoad()">📥 載入資料</button>
 
-        <button class="btn btn-print btn-third" onclick="printToPDF()">🖨️ 轉存 PDF</button>
+        <button class="btn btn-print btn-third" onclick="openPdfMenu()">🖨️ 轉存 PDF</button>
         <button class="btn btn-dict btn-third" onclick="openDictModal()">💡 重點能力</button>
         <button class="btn btn-info btn-third" onclick="showInfo()">📖 操作說明</button>
     </div>
@@ -1477,8 +1578,16 @@
         <div class="modal-section">
             <h3>🗂️ 轉存的 PDF 檔案存在手機哪裡？</h3>
             <ul>
-                <li><strong>蘋果 iOS (iPhone/iPad)：</strong>點擊「🖨️ 轉存 PDF」後，畫面會跳出列印預覽。請點擊預覽畫面下方的「分享」圖示 (或長按預覽圖) ➜ 選擇<strong>「儲存到檔案」</strong>。之後請到手機主畫面尋找內建的<strong>「檔案」APP</strong> (藍色資料夾圖示)，通常會在「我的 iPhone」或「下載項目」中找到。</li>
-                <li><strong>安卓 Android：</strong>點擊「🖨️ 轉存 PDF」後，請在最上方的印表機選單改選為<strong>「儲存為 PDF」</strong>，接著點擊黃色或藍色的 PDF 下載圓形按鈕。之後請到手機主畫面尋找<strong>「檔案管理」或「我的檔案」APP</strong>，檔案通常會躺在「下載 (Downloads)」或「文件」資料夾裡面。</li>
+                <li><strong>蘋果 iOS (iPhone/iPad)：</strong>點擊「🖨️ 轉存 PDF」並選擇「轉存 PDF」後，畫面會跳出列印預覽。請點擊預覽畫面下方的「分享」圖示 (或長按預覽圖) ➜ 選擇<strong>「儲存到檔案」</strong>。之後請到手機主畫面尋找內建的<strong>「檔案」APP</strong> (藍色資料夾圖示)，通常會在「我的 iPhone」或「下載項目」中找到。</li>
+                <li><strong>安卓 Android：</strong>點擊「🖨️ 轉存 PDF」並選擇「轉存 PDF」後，請在最上方的印表機選單改選為<strong>「儲存為 PDF」</strong>，接著點擊黃色或藍色的 PDF 下載圓形按鈕。之後請到手機主畫面尋找<strong>「檔案管理」或「我的檔案」APP</strong>，檔案通常會躺在「下載 (Downloads)」或「文件」資料夾裡面。</li>
+            </ul>
+        </div>
+        <div class="modal-section">
+            <h3>🔗 如何把多份 PDF 合併成一份</h3>
+            <ul>
+                <li>點擊「🖨️ 轉存 PDF」➜ 選擇<strong>「合併 PDF」</strong>➜ 點擊「選擇 PDF 檔案」，可從手機或電腦的資料夾一次挑選多個 PDF，也能分次加入。</li>
+                <li>清單的數字就是合併順序，可用 ▲ ▼ 調整先後、用 ✖ 移除；確認後按「合併並下載」即可產生新檔案。</li>
+                <li>第一次使用合併功能需要連上網路載入合併元件，之後會自動快取。</li>
             </ul>
         </div>
         <div class="modal-section">
@@ -1533,6 +1642,47 @@
     </div>
 </div>
 
-<script src="app.js?v=23" defer></script>
+<div class="modal-overlay" id="pdfMenuModal" onclick="pdfOverlayClick()">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 480px;">
+        <div id="pdfView1">
+            <button class="modal-close" onclick="closePdfMenu()">✖</button>
+            <h2 class="modal-title">🖨️ 請選擇 PDF 功能</h2>
+            <div class="pdf-choice-list">
+                <button class="pdf-choice pdf-choice-export" onclick="choosePdfExport()">
+                    <span class="pdf-choice-icon">🖨️</span>
+                    <span class="pdf-choice-text"><b>轉存 PDF</b><small>將目前畫面的學習區紀錄表轉成 PDF</small></span>
+                </button>
+                <button class="pdf-choice pdf-choice-merge" onclick="choosePdfMerge()">
+                    <span class="pdf-choice-icon">🔗</span>
+                    <span class="pdf-choice-text"><b>合併 PDF</b><small>從資料夾挑選多個 PDF，合併成一份</small></span>
+                </button>
+            </div>
+        </div>
+
+        <div id="pdfView2" style="display: none;">
+            <button class="modal-close" onclick="closePdfMenu()">✖</button>
+            <h2 class="modal-title pdf-merge-title">
+                <button class="pdf-back" onclick="backToPdfMenu()">⬅ 返回</button>
+                <span>合併 PDF</span>
+            </h2>
+            <input type="file" id="pdfMergeInput" accept="application/pdf,.pdf" multiple style="display: none;">
+            <button class="pdf-add-btn" onclick="document.getElementById('pdfMergeInput').click()">📂 選擇 PDF 檔案</button>
+            <div class="pdf-empty" id="pdfMergeEmpty">尚未選擇檔案。可一次選多個，也能分次加入；清單順序就是合併順序。</div>
+            <div class="pdf-file-list" id="pdfMergeList"></div>
+            <div class="pdf-name-row" id="pdfNameRow" style="display: none;">
+                <label for="pdfMergeName">合併後檔名</label>
+                <input type="text" id="pdfMergeName" autocomplete="off">
+            </div>
+            <div class="pdf-msg" id="pdfMergeMsg"></div>
+            <button class="pdf-merge-btn" id="pdfMergeBtn" onclick="mergePdfFiles()" disabled>🔗 合併並下載</button>
+            <div class="pdf-done" id="pdfMergeDone" style="display: none;">
+                <button class="pdf-again-btn" onclick="downloadMergedAgain()">⬇️ 再次下載</button>
+                <button class="pdf-again-btn" id="pdfShareBtn" onclick="shareMergedPdf()" style="display: none;">📤 分享 / 儲存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="app.js?v=24" defer></script>
 </body>
 </html>
