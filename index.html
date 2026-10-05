@@ -13,7 +13,6 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="學習區紀錄">
 <link rel="apple-touch-icon" href="icon-192.png">
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 
 <style>
     :root {
@@ -899,7 +898,27 @@
         box-shadow: 0 4px 12px rgba(0,0,0,0.2); 
         pointer-events: none; 
     }
+
+/* ---------- 座號頁籤 / 備份 / 輸出 PDF ---------- */
+.seat-row { grid-column: 1 / -1; display: flex; gap: 6px; align-items: center; min-width: 0; }
+.seat-tabs { display: flex; gap: 6px; overflow-x: auto; flex: 1; min-width: 0; padding: 2px 0; scrollbar-width: none; }
+.seat-tabs::-webkit-scrollbar { display: none; }
+.seat-tab { flex: 0 0 auto; min-width: 44px; height: 34px; padding: 0 12px; border-radius: 17px; border: none; background: rgba(255,255,255,.18); color: #fff; font-weight: bold; font-size: 14px; font-family: inherit; white-space: nowrap; cursor: pointer; }
+.seat-tab.active { background: #fff; color: #2f3478; }
+.seat-act { flex: 0 0 auto; width: 36px; height: 34px; border-radius: 17px; border: none; background: rgba(255,255,255,.25); color: #fff; font-size: 16px; cursor: pointer; }
+#printBatch { display: none; }
+.seat-hint { font-size: 14px; line-height: 1.6; margin: 6px 0 10px; }
+.seat-tools { display: flex; gap: 8px; margin-bottom: 8px; }
+.seat-tools button { border: 1px solid #ccd3ee; background: #f3f5ff; border-radius: 14px; padding: 4px 12px; font-size: 14px; cursor: pointer; }
+.seat-pick { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; max-height: 40vh; overflow-y: auto; }
+.seat-pick-item { display: flex; align-items: center; gap: 6px; padding: 8px 10px; background: #f3f5ff; border-radius: 12px; font-size: 15px; }
+.seat-pick-item input { width: 18px; height: 18px; }
+@media print {
+    body.batch-print #printBatch { display: block !important; }
+    body.batch-print #recordForm { display: none !important; }
+}
 </style>
+
 <style id="theme-skin">
 /* =====================================================================
    主題美化層（Theme Skin）
@@ -1406,6 +1425,34 @@
     * { transition: none !important; }
 }
 </style>
+<style>
+/* ===== 相片裁剪視窗 ===== */
+#cropModal { z-index: 3500; }
+#cropModal .crop-panel { background:#fff; border-radius:16px; padding:14px; width:min(94vw,640px); max-height:96vh; display:flex; flex-direction:column; align-items:center; gap:10px; box-sizing:border-box; }
+#cropModal .crop-title { font-weight:700; font-size:17px; color:#2d3782; text-align:center; }
+#cropModal .crop-hint { font-size:13px; color:#666; text-align:center; margin-top:-4px; }
+#cropModal .crop-wrap { position:relative; padding:16px; background:#1a1a1a; border-radius:10px; overflow:hidden; touch-action:none; user-select:none; -webkit-user-select:none; }
+#cropModal .crop-stage { position:relative; }
+#cropModal .crop-stage img { display:block; width:100%; height:100%; pointer-events:none; -webkit-user-drag:none; }
+#cropRect { position:absolute; border:2px solid #fff; box-shadow:0 0 0 9999px rgba(0,0,0,.55); box-sizing:border-box; touch-action:none; cursor:move; }
+#cropRect::before, #cropRect::after { content:""; position:absolute; pointer-events:none; }
+#cropRect::before { left:33.33%; right:33.33%; top:0; bottom:0; border-left:1px solid rgba(255,255,255,.5); border-right:1px solid rgba(255,255,255,.5); }
+#cropRect::after { top:33.33%; bottom:33.33%; left:0; right:0; border-top:1px solid rgba(255,255,255,.5); border-bottom:1px solid rgba(255,255,255,.5); }
+#cropRect .ch { position:absolute; width:30px; height:30px; margin:-15px 0 0 -15px; display:flex; align-items:center; justify-content:center; touch-action:none; z-index:2; }
+#cropRect .ch::after { content:""; width:14px; height:14px; background:#fff; border:2px solid #2d3782; border-radius:50%; box-sizing:border-box; }
+#cropRect .ch.e::after, #cropRect .ch.w::after { width:8px; height:22px; border-radius:4px; }
+#cropRect .ch.n::after, #cropRect .ch.s::after { width:22px; height:8px; border-radius:4px; }
+#cropRect .ch[data-h="nw"] { left:0; top:0; } #cropRect .ch[data-h="n"] { left:50%; top:0; } #cropRect .ch[data-h="ne"] { left:100%; top:0; }
+#cropRect .ch[data-h="w"] { left:0; top:50%; } #cropRect .ch[data-h="e"] { left:100%; top:50%; }
+#cropRect .ch[data-h="sw"] { left:0; top:100%; } #cropRect .ch[data-h="s"] { left:50%; top:100%; } #cropRect .ch[data-h="se"] { left:100%; top:100%; }
+#cropModal .crop-ratios { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+#cropModal .crop-ratios button { border:1px solid #c5c9e8; background:#f2f3fb; color:#2d3782; border-radius:16px; padding:6px 14px; font-size:14px; }
+#cropModal .crop-actions { display:flex; gap:8px; width:100%; }
+#cropModal .crop-actions button { flex:1; height:44px; border-radius:8px; border:none; font-size:15px; font-weight:700; }
+#cropModal .crop-actions .c-ok { background:#2d3782; color:#fff; }
+#cropModal .crop-actions .c-full { background:#e6e8f6; color:#2d3782; }
+#cropModal .crop-actions .c-cancel { background:#eee; color:#555; }
+</style>
 </head>
 <body>
 
@@ -1418,42 +1465,23 @@
 
 <div class="top-bar no-print">
     <div class="top-bar-row">
-        <button id="loginBtn" class="btn btn-auth btn-half" onclick="handleAuthClick()">🔵 Google 登入</button>
-        <div class="seat-control btn-half">
-            <span style="margin-right: 4px;">目前座號:</span>
-            <select id="ctrlSeat" class="seat-input">
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-                <option value="6">6</option>
-                <option value="7">7</option>
-                <option value="8">8</option>
-                <option value="9">9</option>
-                <option value="10">10</option>
-                <option value="11">11</option>
-                <option value="12">12</option>
-                <option value="13">13</option>
-                <option value="14">14</option>
-                <option value="15">15</option>
-                <option value="16">16</option>
-                <option value="17">17</option>
-                <option value="18">18</option>
-                <option value="19">19</option>
-                <option value="20">20</option>
-            </select>
+        <div class="seat-row">
+            <div class="seat-tabs" id="seatTabs"></div>
+            <button type="button" class="seat-act" onclick="addSeat()" title="新增座號頁籤">＋</button>
+            <button type="button" class="seat-act" onclick="deleteSeat()" title="刪除目前座號頁籤">🗑</button>
         </div>
+        <input type="hidden" id="ctrlSeat">
 
-        <button class="btn btn-clear btn-third" onclick="clearForm()">🧹 清除畫面</button>
-        <button class="btn btn-save btn-third" onclick="cloudSave()">☁️ 存檔至雲</button>
-        <button class="btn btn-load btn-third" onclick="cloudLoad()">📥 載入資料</button>
+        <button class="btn btn-clear btn-third" onclick="clearForm()">🧹 清空此頁</button>
+        <button class="btn btn-save btn-third" onclick="openBackupModal()">💾 備份</button>
+        <button class="btn btn-print btn-third" onclick="openPdfMenu()">🖨️ 輸出 PDF</button>
 
-        <button class="btn btn-print btn-third" onclick="openPdfMenu()">🖨️ 轉存 PDF</button>
-        <button class="btn btn-dict btn-third" onclick="openDictModal()">💡 重點能力</button>
-        <button class="btn btn-info btn-third" onclick="showInfo()">📖 操作說明</button>
+        <button class="btn btn-dict btn-half" onclick="openDictModal()">💡 重點能力</button>
+        <button class="btn btn-info btn-half" onclick="showInfo()">📖 操作說明</button>
     </div>
 </div>
+
+<div id="printBatch"></div>
 
 <div class="a4-page" id="recordForm">
     <h1>遠東幼兒園 <input type="text" class="title-input year" id="year" placeholder=" "> 學年度 第 <input type="text" class="title-input term" id="term" placeholder=" "> 學期 幼兒學習區紀錄</h1>
@@ -1551,53 +1579,50 @@
 <div class="modal-overlay" id="infoModal" onclick="closeInfo()">
     <div class="modal-content" onclick="event.stopPropagation()">
         <button class="modal-close" onclick="closeInfo()">✖</button>
-        <h2 class="modal-title">遠東幼兒園學習區紀錄系統 <span class="version-tag">版本：發行版</span></h2>
+        <h2 class="modal-title">遠東幼兒園學習區紀錄系統 <span class="version-tag">本機版</span></h2>
 
-        <div class="modal-section">
-            <h3>⚠️ Google 第一次登入常見問題處理</h3>
-            <ul>
-                <li><strong>彈出視窗遭到封鎖：</strong>第一次點擊登入時，瀏覽器可能會阻擋 Google 登入驗證視窗。請注意網址列右側，設定「永遠允許」本網站顯示彈出式視窗。</li>
-                <li><strong>出現「Google 尚未驗證這個應用程式」：</strong>因本系統為內部專屬私有工具，尚未提交 Google 官方公開發布審核。若出現此安全警告，請點擊左下角微小的<strong>「進階」</strong>連結 ➜ 再點擊<strong>「前往該網站 (不安全)」</strong>即可繼續授權。</li>
-                <li><strong>權限未完整勾選：</strong>驗證授權時，請務必勾選「Google 雲端硬碟 (Drive)」及「Google 試算表 (Sheets)」的存取與權限，否則系統將無法為您順利建立資料庫、存檔或讀取相片。</li>
-            </ul>
-        </div>
         <div class="modal-section">
             <h3>📱 如何安裝至手機桌面 (免下載APP)</h3>
             <ul>
-                <li><strong>蘋果 iOS (Safari)：</strong>點擊瀏覽器下方導覽列的「分享」圖示，選擇「加入主畫面」。</li>
                 <li><strong>安卓 Android (Chrome)：</strong>點擊右上角「三個點」選單，選擇「安裝應用程式」。</li>
+                <li><strong>蘋果 iOS (Safari)：</strong>點擊下方「分享」圖示，選擇「加入主畫面」。</li>
             </ul>
         </div>
         <div class="modal-section">
-            <h3>📝 基本操作與重點能力</h3>
+            <h3>🗂️ 座號頁籤與自動存檔</h3>
             <ul>
-                <li><strong>載入與儲存：</strong>輸入座號後點擊「📥 載入」可讀取舊資料，完成編輯後點擊「☁️ 存檔」即可同步至雲端。</li>
-                <li><strong>重點能力詞庫：</strong>點擊「💡 重點能力」按鈕，可快速瀏覽各區專屬評語，點擊句子即可自動複製。</li>
+                <li>畫面最上方的每個頁籤就是一個座號，點頁籤即可切換；「＋」新增座號、「🗑」刪除目前座號。</li>
+                <li>所有資料（文字與相片）都存在這支手機裡，<strong>輸入後會自動儲存</strong>，不需要登入，也不需要網路。</li>
             </ul>
         </div>
         <div class="modal-section">
-            <h3>🗂️ 轉存的 PDF 檔案存在手機哪裡？</h3>
+            <h3>💾 備份與還原</h3>
             <ul>
-                <li><strong>蘋果 iOS (iPhone/iPad)：</strong>點擊「🖨️ 轉存 PDF」並選擇「轉存 PDF」後，畫面會跳出列印預覽。請點擊預覽畫面下方的「分享」圖示 (或長按預覽圖) ➜ 選擇<strong>「儲存到檔案」</strong>。之後請到手機主畫面尋找內建的<strong>「檔案」APP</strong> (藍色資料夾圖示)，通常會在「我的 iPhone」或「下載項目」中找到。</li>
-                <li><strong>安卓 Android：</strong>點擊「🖨️ 轉存 PDF」並選擇「轉存 PDF」後，請在最上方的印表機選單改選為<strong>「儲存為 PDF」</strong>，接著點擊黃色或藍色的 PDF 下載圓形按鈕。之後請到手機主畫面尋找<strong>「檔案管理」或「我的檔案」APP</strong>，檔案通常會躺在「下載 (Downloads)」或「文件」資料夾裡面。</li>
+                <li>手機若清除瀏覽器資料或移除 App，本機資料會一併消失，請務必備份。</li>
+                <li>自動備份：停止編輯約 30 秒後，在 App 內保留最近 <strong>2 份</strong>並輪流覆寫，不需任何授權。但它和資料存在同一處，清除瀏覽器資料時會一起消失。</li>
+                <li>「立即備份」會把備份檔直接下載到手機「下載」資料夾，請定期按；重複下載的檔名會自動加 (1)，可自行刪除舊檔。</li>
+                <li>「還原備份檔」選擇備份檔即可恢復；也可在備份視窗直接點「還原自動備份」。</li>
             </ul>
         </div>
         <div class="modal-section">
-            <h3>🔗 如何把多份 PDF 合併成一份</h3>
+            <h3>✂️ 相片裁剪</h3>
             <ul>
-                <li>點擊「🖨️ 轉存 PDF」➜ 選擇<strong>「合併 PDF」</strong>➜ 點擊「選擇 PDF 檔案」，可從手機或電腦的資料夾一次挑選多個 PDF，也能分次加入。</li>
-                <li>清單的數字就是合併順序，可用 ▲ ▼ 調整先後、用 ✖ 移除；確認後按「合併並下載」即可產生新檔案。</li>
-                <li>第一次使用合併功能需要連上網路載入合併元件，之後會自動快取。</li>
+                <li>拍照或選好相片後會先出現裁剪視窗：拖曳白框的邊與角，把不想入鏡的部分裁掉，按「確定裁剪」即可；不需要裁剪就按「不裁剪」。</li>
+                <li>下方 1:1、4:3 等按鈕可快速套用常見比例，之後仍可再微調。</li>
             </ul>
         </div>
         <div class="modal-section">
-            <h3>☁️ 關於 Google 雲端空間與容量說明</h3>
+            <h3>🖨️ 輸出 PDF</h3>
             <ul>
-                <li>首次授權連線後，系統會自動在您的 Google 雲端硬碟建立兩個專屬檔案（不會弄亂您原有的資料）：
-                    <br>1. <strong>「幼兒學習區紀錄資料庫」</strong>（試算表：儲存所有文字紀錄）
-                    <br>2. <strong>「幼兒相片雲端備份庫」</strong>（資料夾：儲存上傳的照片）
-                </li>
-                <li><strong>不會佔用太多容量：</strong>文字紀錄佔用的空間微乎其微；而您上傳的照片，系統會在背景<strong>自動進行壓縮縮小處理</strong>。即使存了整班的照片，也非常輕量，<strong>完全不用擔心會佔用您 Google 雲端硬碟的寶貴容量喔！</strong></li>
+                <li>點「🖨️ 輸出 PDF」勾選座號。<strong>個別轉出</strong>：一次 1 個座號；<strong>合併輸出</strong>：勾選多個座號合成一份 PDF，不需要另外挑檔案。</li>
+                <li>PDF 會直接下載到手機「下載」資料夾，版面與列印結果相同，不需連網（文字會是圖片，無法選取）。</li>
+                <li>若勾選「改用系統列印預覽」，則在列印預覽把印表機改選「儲存為 PDF」，自己選存放位置。</li>
+            </ul>
+        </div>
+        <div class="modal-section">
+            <h3>📝 重點能力詞庫</h3>
+            <ul>
+                <li>點擊「💡 重點能力」可快速瀏覽各區專屬評語，點擊句子即可自動複製。</li>
             </ul>
         </div>
     </div>
@@ -1642,47 +1667,64 @@
     </div>
 </div>
 
-<div class="modal-overlay" id="pdfMenuModal" onclick="pdfOverlayClick()">
-    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 480px;">
-        <div id="pdfView1">
-            <button class="modal-close" onclick="closePdfMenu()">✖</button>
-            <h2 class="modal-title">🖨️ 請選擇 PDF 功能</h2>
-            <div class="pdf-choice-list">
-                <button class="pdf-choice pdf-choice-export" onclick="choosePdfExport()">
-                    <span class="pdf-choice-icon">🖨️</span>
-                    <span class="pdf-choice-text"><b>轉存 PDF</b><small>將目前畫面的學習區紀錄表轉成 PDF</small></span>
-                </button>
-                <button class="pdf-choice pdf-choice-merge" onclick="choosePdfMerge()">
-                    <span class="pdf-choice-icon">🔗</span>
-                    <span class="pdf-choice-text"><b>合併 PDF</b><small>從資料夾挑選多個 PDF，合併成一份</small></span>
-                </button>
+<div class="modal-overlay" id="cropModal">
+    <div class="crop-panel">
+        <div class="crop-title">✂️ 裁剪相片</div>
+        <div class="crop-hint">拖曳白框的邊與角，框外的部分會被裁掉；也可拖動整個框</div>
+        <div class="crop-wrap" id="cropWrap">
+            <div class="crop-stage" id="cropStage">
+                <img id="cropImg" alt="">
+                <div id="cropRect">
+                    <span class="ch nw" data-h="nw"></span><span class="ch n" data-h="n"></span><span class="ch ne" data-h="ne"></span>
+                    <span class="ch w" data-h="w"></span><span class="ch e" data-h="e"></span>
+                    <span class="ch sw" data-h="sw"></span><span class="ch s" data-h="s"></span><span class="ch se" data-h="se"></span>
+                </div>
             </div>
         </div>
-
-        <div id="pdfView2" style="display: none;">
-            <button class="modal-close" onclick="closePdfMenu()">✖</button>
-            <h2 class="modal-title pdf-merge-title">
-                <button class="pdf-back" onclick="backToPdfMenu()">⬅ 返回</button>
-                <span>合併 PDF</span>
-            </h2>
-            <input type="file" id="pdfMergeInput" accept="application/pdf,.pdf" multiple style="display: none;">
-            <button class="pdf-add-btn" onclick="document.getElementById('pdfMergeInput').click()">📂 選擇 PDF 檔案</button>
-            <div class="pdf-empty" id="pdfMergeEmpty">尚未選擇檔案。可一次選多個，也能分次加入；清單順序就是合併順序。</div>
-            <div class="pdf-file-list" id="pdfMergeList"></div>
-            <div class="pdf-name-row" id="pdfNameRow" style="display: none;">
-                <label for="pdfMergeName">合併後檔名</label>
-                <input type="text" id="pdfMergeName" autocomplete="off">
-            </div>
-            <div class="pdf-msg" id="pdfMergeMsg"></div>
-            <button class="pdf-merge-btn" id="pdfMergeBtn" onclick="mergePdfFiles()" disabled>🔗 合併並下載</button>
-            <div class="pdf-done" id="pdfMergeDone" style="display: none;">
-                <button class="pdf-again-btn" onclick="downloadMergedAgain()">⬇️ 再次下載</button>
-                <button class="pdf-again-btn" id="pdfShareBtn" onclick="shareMergedPdf()" style="display: none;">📤 分享 / 儲存</button>
-            </div>
+        <div class="crop-ratios">
+            <button type="button" onclick="cropPreset(0)">全圖</button>
+            <button type="button" onclick="cropPreset(1)">1:1</button>
+            <button type="button" onclick="cropPreset(4/3)">4:3</button>
+            <button type="button" onclick="cropPreset(3/4)">3:4</button>
+            <button type="button" onclick="cropPreset(16/9)">16:9</button>
+        </div>
+        <div class="crop-actions">
+            <button type="button" class="c-cancel" onclick="cropFinish('cancel')">取消</button>
+            <button type="button" class="c-full" onclick="cropFinish('full')">不裁剪</button>
+            <button type="button" class="c-ok" onclick="cropFinish('ok')">✅ 確定裁剪</button>
         </div>
     </div>
 </div>
 
-<script src="app.js?v=24" defer></script>
+<div class="modal-overlay" id="pdfMenuModal" onclick="closePdfMenu()">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 480px;">
+        <button class="modal-close" onclick="closePdfMenu()">✖</button>
+        <h2 class="modal-title">🖨️ 輸出 PDF</h2>
+        <div class="seat-hint">勾選座號：<b>個別轉出</b>一次 1 個；<b>合併輸出</b>可多選，合成一份。</div>
+        <div class="seat-tools"><button type="button" onclick="pdfSelectAll(true)">全選</button><button type="button" onclick="pdfSelectAll(false)">全不選</button></div>
+        <div class="seat-pick" id="pdfSeatList"></div>
+        <label class="seat-hint" style="display:flex;gap:8px;align-items:center;"><input type="checkbox" id="pdfUsePrint" style="width:18px;height:18px;"> 改用系統列印預覽（存放位置自己選）</label>
+        <div class="pdf-msg" id="pdfMsg"></div>
+        <div class="pdf-done">
+            <button class="pdf-again-btn" onclick="exportPdf('single')">📄 個別轉出</button>
+            <button class="pdf-again-btn" onclick="exportPdf('merge')">🔗 合併輸出</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="backupModal" onclick="closeBackupModal()">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 480px;">
+        <button class="modal-close" onclick="closeBackupModal()">✖</button>
+        <h2 class="modal-title">💾 備份與還原</h2>
+        <div class="seat-hint" id="backupStatus"></div>
+        <input type="file" id="restoreInput" accept=".json,application/json" style="display:none;">
+        <button class="pdf-add-btn" onclick="manualBackup()">⬆️ 立即備份</button>
+        <button class="pdf-add-btn" onclick="document.getElementById('restoreInput').click()" style="margin-top:10px;">♻️ 還原備份檔</button>
+        <div id="autoSlotBox"></div>
+        <div class="pdf-msg" id="backupMsg"></div>
+    </div>
+</div>
+
+<script src="app.js?v=31" defer></script>
 </body>
 </html>
